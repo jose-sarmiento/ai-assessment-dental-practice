@@ -1,0 +1,101 @@
+appointment_id,patient_name,patient_id,date,time,provider,procedure,status,notes
+APT-001,Jane Smith,P-1001,2026-05-10,09:00,Dr. Reyes,Routine Cleaning,scheduled,First visit of the year
+APT-002,Carlos Rivera,P-1002,2026-05-10,10:30,Dr. Reyes,Composite Filling D2391,scheduled,Lower left molar
+APT-003,Amy Chen,P-1003,2026-05-11,08:00,Dr. Patel,Crown Prep D2712,scheduled,Pre-auth approved
+APT-004,John Doe,P-1004,2026-05-11,14:00,Dr. Reyes,Emergency Exam,completed,Tooth #18 pain
+APT-005,Maria Lopez,P-1005,2026-05-12,11:00,Dr. Patel,Orthodontic Consult,scheduled,Invisalign evaluation
+APT-006,James Wu,P-1006,2026-05-13,09:30,Dr. Reyes,Extraction D7210,scheduled,Wisdom tooth #32
+APT-007,Linda Nguyen,P-1007,2026-05-13,13:00,Dr. Patel,Routine Cleaning,scheduled,6-month recall
+APT-008,Robert Kim,P-1008,2026-05-14,08:30,Dr. Reyes,Root Canal D3330,scheduled,Tooth #19 — pre-auth sent
+APT-009,Patricia Moore,P-1009,2026-05-14,10:00,Dr. Patel,Composite Filling D2392,scheduled,Upper right premolar
+APT-010,Kevin Brown,P-1010,2026-05-14,15:00,Dr. Reyes,Periodontal Cleaning D4341,scheduled,4 quadrants
+APT-011,Sandra Davis,P-1011,2026-05-15,09:00,Dr. Patel,Crown Delivery D2740,scheduled,Porcelain crown tooth #14
+APT-012,Thomas Wilson,P-1012,2026-05-15,11:30,Dr. Reyes,Routine Cleaning,scheduled,Annual recall
+APT-013,Nancy Martinez,P-1013,2026-05-16,08:00,Dr. Patel,Implant Consult,scheduled,Replace tooth #30
+APT-014,Daniel Anderson,P-1014,2026-05-16,10:00,Dr. Reyes,Extraction D7140,scheduled,Non-restorable #29
+APT-015,Betty Taylor,P-1015,2026-05-16,14:30,Dr. Patel,Composite Filling D2391,scheduled,Tooth #4
+APT-016,Paul Jackson,P-1016,2026-05-17,09:00,Dr. Reyes,Root Canal D3310,scheduled,Tooth #8 anterior
+APT-017,Dorothy White,P-1017,2026-05-17,11:00,Dr. Patel,Routine Cleaning,scheduled,New patient
+APT-018,Mark Harris,P-1018,2026-05-17,13:30,Dr. Reyes,Periodontal Exam D0180,scheduled,Bleeding on probing noted
+APT-019,Carol Thompson,P-1019,2026-05-18,08:30,Dr. Patel,Orthodontic Adjustment,scheduled,Wire change — upper arch
+APT-020,Donald Garcia,P-1020,2026-05-18,10:00,Dr. Reyes,Crown Prep D2712,scheduled,Tooth #3
+APT-021,Margaret Martinez,P-1021,2026-05-18,14:00,Dr. Patel,Routine Cleaning,completed,No concerns
+APT-022,Steven Robinson,P-1022,2026-05-19,09:00,Dr. Reyes,Composite Filling D2393,scheduled,2 surfaces posterior
+APT-023,Ruth Clark,P-1023,2026-05-19,11:30,Dr. Patel,Extraction D7210,scheduled,Tooth #16 impacted
+APT-024,Kenneth Rodriguez,P-1024,2026-05-19,13:00,Dr. Reyes,Routine Cleaning,scheduled,6-month recall
+APT-025,Sharon Lewis,P-1025,2026-05-20,08:00,Dr. Patel,Implant Placement D6010,scheduled,Site #30 — healed
+APT-026,George Lee,P-1026,2026-05-20,10:00,Dr. Reyes,Periodontal Cleaning D4341,scheduled,2 quadrants
+APT-027,Donna Walker,P-1027,2026-05-20,14:00,Dr. Patel,Root Canal D3320,scheduled,Tooth #13 bicuspid
+APT-028,Edward Hall,P-1028,2026-05-21,09:30,Dr. Reyes,Crown Delivery D2740,scheduled,Tooth #3 final seating
+APT-029,Michelle Allen,P-1029,2026-05-21,11:00,Dr. Patel,Composite Filling D2391,scheduled,Tooth #20
+APT-030,Ronald Young,P-1030,2026-05-21,15:00,Dr. Reyes,Emergency Exam,scheduled,Broken cusp #15
+APT-031,Laura Hernandez,P-1031,2026-05-22,08:00,Dr. Patel,Routine Cleaning,scheduled,Annual recall
+APT-032,Brian King,P-1032,2026-05-22,10:30,Dr. Reyes,Extraction D7210,scheduled,Wisdom tooth #17
+APT-033,Sarah Wright,P-1033,2026-05-22,13:00,Dr. Patel,Orthodontic Consult,scheduled,Phase 2 evaluation
+APT-034,Christopher Lopez,P-1034,2026-05-23,09:00,Dr. Reyes,Composite Filling D2392,scheduled,Tooth #5
+APT-035,Amanda Hill,P-1035,2026-05-23,11:00,Dr. Patel,Crown Prep D2712,scheduled,Tooth #19
+APT-036,Matthew Scott,P-1036,2026-05-23,14:30,Dr. Reyes,Routine Cleaning,scheduled,New patient — full exam
+APT-037,Stephanie Green,P-1037,2026-05-24,08:30,Dr. Patel,Root Canal D3330,scheduled,Tooth #30 molar
+APT-038,Anthony Adams,P-1038,2026-05-24,10:00,Dr. Reyes,Periodontal Cleaning D4342,scheduled,3 quadrants
+APT-039,Melissa Baker,P-1039,2026-05-24,13:00,Dr. Patel,Routine Cleaning,scheduled,Recall — 9 months
+APT-040,Joshua Gonzalez,P-1040,2026-05-25,09:00,Dr. Reyes,Implant Abutment D6057,scheduled,Tooth #19 — stage 2
+APT-041,Deborah Nelson,P-1041,2026-05-25,11:30,Dr. Patel,Composite Filling D2391,scheduled,Tooth #28
+APT-042,Andrew Carter,P-1042,2026-05-25,14:00,Dr. Reyes,Extraction D7140,scheduled,Retained root #31
+APT-043,Jessica Mitchell,P-1043,2026-05-26,08:00,Dr. Patel,Crown Delivery D2740,scheduled,Tooth #19 final
+APT-044,Ryan Perez,P-1044,2026-05-26,10:00,Dr. Reyes,Routine Cleaning,scheduled,6-month recall
+APT-045,Kimberly Roberts,P-1045,2026-05-26,14:00,Dr. Patel,Orthodontic Adjustment,scheduled,Lower wire tightening
+APT-046,Jacob Turner,P-1046,2026-05-27,09:30,Dr. Reyes,Root Canal D3310,scheduled,Tooth #9 — trauma history
+APT-047,Ashley Phillips,P-1047,2026-05-27,11:00,Dr. Patel,Periodontal Exam D0180,scheduled,Maintenance eval
+APT-048,Nicholas Campbell,P-1048,2026-05-27,13:30,Dr. Reyes,Composite Filling D2393,scheduled,3 surfaces tooth #31
+APT-049,Brittany Parker,P-1049,2026-05-28,08:00,Dr. Patel,Routine Cleaning,scheduled,New patient
+APT-050,Tyler Evans,P-1050,2026-05-28,10:30,Dr. Reyes,Crown Prep D2712,scheduled,Tooth #2
+APT-051,Samantha Edwards,P-1051,2026-05-28,13:00,Dr. Patel,Extraction D7210,scheduled,Wisdom tooth #1
+APT-052,Zachary Collins,P-1052,2026-05-29,09:00,Dr. Reyes,Implant Consult,scheduled,Missing #19 and #30
+APT-053,Victoria Stewart,P-1053,2026-05-29,11:00,Dr. Patel,Composite Filling D2391,scheduled,Tooth #12
+APT-054,Austin Sanchez,P-1054,2026-05-29,14:30,Dr. Reyes,Routine Cleaning,scheduled,Annual recall
+APT-055,Megan Morris,P-1055,2026-05-30,08:30,Dr. Patel,Root Canal D3320,scheduled,Tooth #4 — acute pain
+APT-056,Cody Rogers,P-1056,2026-05-30,10:00,Dr. Reyes,Periodontal Cleaning D4341,scheduled,4 quadrants
+APT-057,Rachel Reed,P-1057,2026-05-30,13:00,Dr. Patel,Crown Delivery D2740,scheduled,Tooth #2 final seating
+APT-058,Justin Cook,P-1058,2026-06-01,09:00,Dr. Reyes,Composite Filling D2392,scheduled,Tooth #21
+APT-059,Kayla Morgan,P-1059,2026-06-01,11:30,Dr. Patel,Orthodontic Consult,scheduled,Adult braces inquiry
+APT-060,Brandon Bell,P-1060,2026-06-01,14:00,Dr. Reyes,Emergency Exam,scheduled,Swelling lower jaw
+APT-061,Amber Murphy,P-1061,2026-06-02,08:00,Dr. Patel,Routine Cleaning,scheduled,6-month recall
+APT-062,Logan Bailey,P-1062,2026-06-02,10:00,Dr. Reyes,Extraction D7210,scheduled,Tooth #32 partially erupted
+APT-063,Tiffany Rivera,P-1063,2026-06-02,13:30,Dr. Patel,Composite Filling D2391,scheduled,Tooth #6
+APT-064,Hunter Cooper,P-1064,2026-06-03,09:30,Dr. Reyes,Root Canal D3330,scheduled,Tooth #18
+APT-065,Courtney Richardson,P-1065,2026-06-03,11:00,Dr. Patel,Routine Cleaning,scheduled,New patient — full exam
+APT-066,Cody Cox,P-1066,2026-06-03,14:00,Dr. Reyes,Crown Prep D2712,scheduled,Tooth #30
+APT-067,Brianna Howard,P-1067,2026-06-04,08:30,Dr. Patel,Periodontal Cleaning D4341,scheduled,2 quadrants
+APT-068,Caleb Ward,P-1068,2026-06-04,10:30,Dr. Reyes,Composite Filling D2393,scheduled,Tooth #18 — 3 surfaces
+APT-069,Destiny Torres,P-1069,2026-06-04,13:00,Dr. Patel,Implant Placement D6010,scheduled,Site #19 — healed ridge
+APT-070,Evan Peterson,P-1070,2026-06-05,09:00,Dr. Reyes,Routine Cleaning,scheduled,Recall — 8 months
+APT-071,Hailey Gray,P-1071,2026-06-05,11:00,Dr. Patel,Extraction D7140,scheduled,Non-restorable #20
+APT-072,Ian Ramirez,P-1072,2026-06-05,14:30,Dr. Reyes,Crown Delivery D2740,scheduled,Tooth #30 final
+APT-073,Jade James,P-1073,2026-06-06,08:00,Dr. Patel,Orthodontic Adjustment,scheduled,Upper and lower archwire
+APT-074,Kyle Watson,P-1074,2026-06-06,10:00,Dr. Reyes,Composite Filling D2391,scheduled,Tooth #25
+APT-075,Leah Brooks,P-1075,2026-06-06,13:00,Dr. Patel,Root Canal D3310,scheduled,Tooth #7 discolored
+APT-076,Mason Kelly,P-1076,2026-06-07,09:30,Dr. Reyes,Periodontal Exam D0180,scheduled,Re-evaluation 3 months post SRP
+APT-077,Natalie Sanders,P-1077,2026-06-07,11:30,Dr. Patel,Routine Cleaning,scheduled,6-month recall
+APT-078,Owen Price,P-1078,2026-06-07,14:00,Dr. Reyes,Emergency Exam,scheduled,Chipped front tooth #8
+APT-079,Paige Bennett,P-1079,2026-06-08,08:00,Dr. Patel,Composite Filling D2392,scheduled,Tooth #10
+APT-080,Quinn Wood,P-1080,2026-06-08,10:00,Dr. Reyes,Extraction D7210,scheduled,Tooth #16 impacted
+APT-081,Riley Barnes,P-1081,2026-06-08,13:30,Dr. Patel,Crown Prep D2712,scheduled,Tooth #13
+APT-082,Sean Ross,P-1082,2026-06-09,09:00,Dr. Reyes,Routine Cleaning,scheduled,Annual recall
+APT-083,Taylor Henderson,P-1083,2026-06-09,11:00,Dr. Patel,Implant Abutment D6057,scheduled,Tooth #3 — stage 2
+APT-084,Uma Coleman,P-1084,2026-06-09,14:00,Dr. Reyes,Composite Filling D2391,scheduled,Tooth #22
+APT-085,Victor Jenkins,P-1085,2026-06-10,08:30,Dr. Patel,Root Canal D3320,scheduled,Tooth #14 — recurrent decay
+APT-086,Wendy Perry,P-1086,2026-06-10,10:30,Dr. Reyes,Periodontal Cleaning D4341,scheduled,Full mouth SRP
+APT-087,Xander Powell,P-1087,2026-06-10,13:00,Dr. Patel,Routine Cleaning,scheduled,New patient
+APT-088,Yara Long,P-1088,2026-06-11,09:00,Dr. Reyes,Crown Delivery D2740,scheduled,Tooth #13 final
+APT-089,Zane Patterson,P-1089,2026-06-11,11:00,Dr. Patel,Orthodontic Retainer,scheduled,Upper Hawley delivery
+APT-090,Abigail Hughes,P-1090,2026-06-11,14:30,Dr. Reyes,Extraction D7140,scheduled,Retained root #28
+APT-091,Blake Flores,P-1091,2026-06-12,08:00,Dr. Patel,Composite Filling D2393,scheduled,Tooth #31 — 3 surfaces
+APT-092,Clara Washington,P-1092,2026-06-12,10:00,Dr. Reyes,Emergency Exam,scheduled,Abscess — lower right quad
+APT-093,Derek Butler,P-1093,2026-06-12,13:00,Dr. Patel,Routine Cleaning,scheduled,6-month recall
+APT-094,Elise Simmons,P-1094,2026-06-13,09:30,Dr. Reyes,Root Canal D3330,scheduled,Tooth #31 molar
+APT-095,Finn Foster,P-1095,2026-06-13,11:30,Dr. Patel,Crown Prep D2712,scheduled,Tooth #4
+APT-096,Grace Gonzalez,P-1096,2026-06-13,14:00,Dr. Reyes,Periodontal Cleaning D4342,scheduled,2 quadrants lower
+APT-097,Henry Bryant,P-1097,2026-06-14,08:00,Dr. Patel,Routine Cleaning,scheduled,Recall — 7 months
+APT-098,Isla Alexander,P-1098,2026-06-14,10:00,Dr. Reyes,Implant Crown D6065,scheduled,Tooth #19 — final crown
+APT-099,James Russell,P-1099,2026-06-14,13:30,Dr. Patel,Composite Filling D2391,scheduled,Tooth #11
+APT-100,Katherine Griffin,P-1100,2026-06-15,09:00,Dr. Reyes,Extraction D7210,scheduled,Wisdom tooth #17 impacted
