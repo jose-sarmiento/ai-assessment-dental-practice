@@ -52,6 +52,18 @@ def setup():
 
     print("Done.")
 
+    print("\nRunning ingest...")
+    from app.ingest.ingest import ingest_file
+    files = [
+        ("mock_data/appointments.csv",  "appointments"),
+        ("mock_data/claims.csv",        "claims"),
+        ("mock_data/insurance_faq.txt", "data_sources"),
+    ]
+    for file_path, table in files:
+        ingest_file(file_path, tenant_id="clinic-demo", table=table)
+
+    print("Ingest complete.")
+
 
 if __name__ == "__main__":
     setup()

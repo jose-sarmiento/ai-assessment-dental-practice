@@ -9,12 +9,13 @@ from .base import BaseDriver
 
 class DataSourcesDriver(BaseDriver):
 
-    def __init__(self, tenant_id: str, doc_type: str, effective_date: str | None = None):
+    def __init__(self, tenant_id: str, effective_date: str | None = None):
         super().__init__(tenant_id)
-        self.doc_type = doc_type
         self.effective_date = effective_date
 
     def ingest(self, file_path: Path) -> int:
+        doc_type = file_path.suffix.lstrip(".").lower()  # e.g. "txt", "pdf", "csv"
+
         print(f"[data_sources] parsing   {file_path.name}")
         document = parse(file_path)
         chunks = chunk(document)
@@ -30,7 +31,7 @@ class DataSourcesDriver(BaseDriver):
                 "chunk_index":    i,
                 "source":         file_path.name,
                 "tenant_id":      self.tenant_id,
-                "doc_type":       self.doc_type,
+                "doc_type":       doc_type,
                 "effective_date": self.effective_date,
                 "embedding":      vec,
             }

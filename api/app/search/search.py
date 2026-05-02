@@ -9,7 +9,7 @@ _RRF_K = 60  # RRF constant — higher = smoother rank fusion
 def vector_search(query: str, tenant_id: str, top_k: int = 10) -> list[dict]:
     vec = np.array(embed([query])[0], dtype=np.float32)
     sql = """
-        SELECT text, source, page, chunk_index,
+        SELECT text, source, page, chunk_index, doc_type,
                1 - (embedding <=> %s) AS score
         FROM data_sources
         WHERE tenant_id = %s
@@ -27,7 +27,7 @@ def vector_search(query: str, tenant_id: str, top_k: int = 10) -> list[dict]:
 
 def lexical_search(query: str, tenant_id: str, top_k: int = 10) -> list[dict]:
     sql = """
-        SELECT text, source, page, chunk_index,
+        SELECT text, source, page, chunk_index, doc_type,
                ts_rank(search_vector, websearch_to_tsquery('english', %s)) AS score
         FROM data_sources
         WHERE tenant_id = %s

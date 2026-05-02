@@ -10,27 +10,41 @@ from app.agents.retriever import RetrieverAgent
 
 TENANT_ID = "clinic-demo"
 
-PRESET_QUESTIONS = [
-    "Show me all appointments for Dr. Reyes in May 2026",
-    "What are the morning appointments scheduled for next week?",
-    "What appointment is booked by Jane Smith?",
-    "Rank appointment types in May 2026 by count from highest to lowest",
-    "Who has appointments booked for composite fillings?",
-]
+PRESET_QUESTIONS = {
+    "Appointments": [
+        "Show me all appointments for Dr. Reyes in May 2026",
+        "What are the morning appointments scheduled for next week?",
+        "What appointment is booked by Jane Smith?",
+        "Rank appointment types in May 2026 by count from highest to lowest",
+        "Who has appointments booked for composite fillings?",
+    ],
+    "Claims": [
+        "Show all pending claims",
+        "What claims has Jane Smith filed?",
+        "Show denied claims and the reason",
+        "What is the total amount owed by patients across all claims?",
+        "Which insurance payer has the most claims?",
+    ],
+}
 
 
 def prompt_input() -> str:
-    print("Preset questions:")
-    for i, q in enumerate(PRESET_QUESTIONS, 1):
-        print(f"  {i}. {q}")
-    print()
+    index = {}
+    counter = 1
+    for section, questions in PRESET_QUESTIONS.items():
+        print(f"{section}:")
+        for q in questions:
+            print(f"  {counter}. {q}")
+            index[counter] = q
+            counter += 1
+        print()
 
     raw = input("You (enter number or type question): ").strip()
 
     if raw.isdigit():
-        idx = int(raw) - 1
-        if 0 <= idx < len(PRESET_QUESTIONS):
-            question = PRESET_QUESTIONS[idx]
+        idx = int(raw)
+        if idx in index:
+            question = index[idx]
             print(f"  → {question}")
             return question
 
@@ -55,15 +69,13 @@ def main():
         history.append({"role": "user", "content": query})
 
         print("\nAI: ", end="", flush=True)
-        stream, citations = agent.run(history)
+        stream, _ = agent.run(history)
 
         answer = ""
         for chunk in stream:
             print(chunk, end="", flush=True)
             answer += chunk
 
-        if citations:
-            print(f"\n\nSources: {', '.join(citations)}")
         print()
 
         history.append({"role": "assistant", "content": answer})
