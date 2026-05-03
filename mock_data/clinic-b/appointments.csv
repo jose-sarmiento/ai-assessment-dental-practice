@@ -1,0 +1,11 @@
+appointment_id,tenant_id,tenant_name,patient_name,patient_id,date,time,provider,procedure,status,notes
+APT-091,clinic-b,Bright Smiles Dental,Blake Flores,P-1091,2026-06-12,08:00,Dr. Patel,Composite Filling D2393,scheduled,Tooth #31 — 3 surfaces
+APT-092,clinic-b,Bright Smiles Dental,Clara Washington,P-1092,2026-06-12,10:00,Dr. Reyes,Emergency Exam,scheduled,Abscess — lower right quad
+APT-093,clinic-b,Bright Smiles Dental,Derek Butler,P-1093,2026-06-12,13:00,Dr. Patel,Routine Cleaning,scheduled,6-month recall
+APT-094,clinic-b,Bright Smiles Dental,Elise Simmons,P-1094,2026-06-13,09:30,Dr. Reyes,Root Canal D3330,scheduled,Tooth #31 molar
+APT-095,clinic-b,Bright Smiles Dental,Finn Foster,P-1095,2026-06-13,11:30,Dr. Patel,Crown Prep D2712,scheduled,Tooth #4
+APT-096,clinic-b,Bright Smiles Dental,Grace Gonzalez,P-1096,2026-06-13,14:00,Dr. Reyes,Periodontal Cleaning D4342,scheduled,2 quadrants lower
+APT-097,clinic-b,Bright Smiles Dental,Henry Bryant,P-1097,2026-06-14,08:00,Dr. Patel,Routine Cleaning,scheduled,Recall — 7 months
+APT-098,clinic-b,Bright Smiles Dental,Isla Alexander,P-1098,2026-06-14,10:00,Dr. Reyes,Implant Crown D6065,scheduled,Tooth #19 — final crown
+APT-099,clinic-b,Bright Smiles Dental,James Russell,P-1099,2026-06-14,13:30,Dr. Patel,Composite Filling D2391,scheduled,Tooth #11
+APT-100,clinic-b,Bright Smiles Dental,Katherine Griffin,P-1100,2026-06-15,09:00,Dr. Reyes,Extraction D7210,scheduled,Wisdom tooth #17 impacted

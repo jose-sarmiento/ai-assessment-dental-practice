@@ -1,27 +1,99 @@
 from datetime import date as Date
+from enum import Enum
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 from ..db.connection import get_conn
 from ..search.search import hybrid_search
 from .base import BaseAgent
 
-_VALID_APPOINTMENT_STATUSES = {"scheduled", "completed", "cancelled"}
-_VALID_CLAIM_STATUSES = {"pending", "paid", "denied"}
+
+# ── Tool schemas ───────────────────────────────────────────────────────────────
+
+class AppointmentStatus(str, Enum):
+    scheduled = "scheduled"
+    completed = "completed"
+    cancelled = "cancelled"
+
+
+class ClaimStatus(str, Enum):
+    pending = "pending"
+    paid    = "paid"
+    denied  = "denied"
+
+
+class SearchAppointmentsArgs(BaseModel):
+    query:          Optional[str]               = Field(None, description="Text to search: patient name, provider, or procedure")
+    date_from:      Optional[str]               = Field(None, description="Start date inclusive (YYYY-MM-DD). Only set if the user explicitly mentions a date or range.")
+    date_to:        Optional[str]               = Field(None, description="End date inclusive (YYYY-MM-DD). Only set if the user explicitly mentions a date or range.")
+    status:         Optional[AppointmentStatus] = Field(None, description="Only set if the user explicitly requests a specific status.")
+    patient_id:     Optional[str]               = Field(None, description="Filter by exact patient ID (e.g. P-1001)")
+    procedure_code: Optional[str]               = Field(None, description="Filter by procedure code (e.g. D2391)")
+    time_from:      Optional[str]               = Field(None, description="Start time inclusive (HH:MM), 24h format")
+    time_to:        Optional[str]               = Field(None, description="End time inclusive (HH:MM), 24h format")
+
+
+class SearchClaimsArgs(BaseModel):
+    query:          Optional[str]         = Field(None, description="Text to search: patient name, payer, or procedure")
+    date_from:      Optional[str]         = Field(None, description="Start date of service inclusive (YYYY-MM-DD). Only set if the user explicitly mentions a date or range.")
+    date_to:        Optional[str]         = Field(None, description="End date of service inclusive (YYYY-MM-DD). Only set if the user explicitly mentions a date or range.")
+    status:         Optional[ClaimStatus] = Field(None, description="Only set if the user explicitly requests a specific status. Do not assume a default — omit to return all claims.")
+    patient_id:     Optional[str]         = Field(None, description="Exact patient ID (e.g. P-1001)")
+    procedure_code: Optional[str]         = Field(None, description="Procedure code (e.g. D1110)")
+    payer:          Optional[str]         = Field(None, description="Insurance payer name")
+
+
+class SearchKnowledgeArgs(BaseModel):
+    query: str = Field(..., description="The user's question verbatim")
+
+
+
+
+# ── Agent ──────────────────────────────────────────────────────────────────────
+
+def _tool(name: str, description: str, model: type[BaseModel]) -> dict:
+    schema = model.model_json_schema()
+    schema.pop("title", None)
+    return {"type": "function", "name": name, "description": description, "parameters": schema}
+
+
+_VALID_APPOINTMENT_STATUSES = {s.value for s in AppointmentStatus}
+_VALID_CLAIM_STATUSES       = {s.value for s in ClaimStatus}
 
 
 class RetrieverAgent(BaseAgent):
 
+    def __init__(self, tenant_id: str, session: dict | None = None):
+        super().__init__(tenant_id)
+        self.session = session or {}
+
     def prompt(self) -> str:
         from datetime import datetime
         now = datetime.now()
+
+        role         = self.session.get("role", "staff")
+        clinic       = self.session.get("tenant_name") or self.tenant_id
+        patient_name = self.session.get("patient_name")
+        patient_id   = self.session.get("patient_id")
+
+        if role == "patient" and patient_name:
+            identity = f"You are speaking with {patient_name} (ID: {patient_id}), a patient at {clinic}."
+            scope    = f"Only retrieve data that belongs to {patient_name}. Do not surface any other patient's records."
+        else:
+            identity = f"You are assisting a staff member at {clinic}."
+            scope    = "You have access to all records within the clinic."
+
         return (
             f"Today is {now.strftime('%A, %B %d, %Y')} and the current time is {now.strftime('%H:%M')}.\n\n"
-            "You are a dental practice assistant. You have access to three tools:\n"
+            f"{identity} {scope}\n\n"
+            "You have access to three tools:\n"
             "- search_appointments: look up appointment records\n"
             "- search_claims: look up insurance claim records\n"
             "- search_knowledge: search policy documents and FAQs\n\n"
             "Rules you must follow:\n"
             "1. Always use a tool before answering. Never answer from your own knowledge.\n"
-            "2. If the tools return no results, say: 'I could not find any information on that in the system.'\n"
+            "2. If the tools return no results, give a specific response like 'No pending claims were found for you' rather than a generic message.\n"
             "3. Every successful answer must end with a 'Sources:' line listing the record IDs or documents used.\n"
             "4. Do not infer, assume, or fill gaps with outside knowledge. Stick strictly to retrieved data.\n"
             "5. If the question is outside the scope of appointments, claims, or practice documents, say so."
@@ -29,101 +101,33 @@ class RetrieverAgent(BaseAgent):
 
     def tools(self) -> list[dict]:
         return [
-            {
-                "type": "function",
-                "name": "search_appointments",
-                "description": (
-                    "Search appointments by patient name, provider, procedure, "
-                    "date range, or status. Use date_from and date_to for ranges "
-                    "(e.g. a full month). All dates must be YYYY-MM-DD."
-                ),
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "query": {
-                            "type": "string",
-                            "description": "Text to search: patient name, provider, or procedure",
-                        },
-                        "date_from": {
-                            "type": "string",
-                            "description": "Start date inclusive (YYYY-MM-DD)",
-                        },
-                        "date_to": {
-                            "type": "string",
-                            "description": "End date inclusive (YYYY-MM-DD)",
-                        },
-                        "status": {
-                            "type": "string",
-                            "enum": ["scheduled", "completed", "cancelled"],
-                            "description": "Appointment status",
-                        },
-                        "patient_id": {
-                            "type": "string",
-                            "description": "Filter by exact patient ID (e.g. P-1001)",
-                        },
-                        "procedure_code": {
-                            "type": "string",
-                            "description": "Filter by procedure code (e.g. D2391)",
-                        },
-                        "time_from": {
-                            "type": "string",
-                            "description": "Start time inclusive (HH:MM), 24h format",
-                        },
-                        "time_to": {
-                            "type": "string",
-                            "description": "End time inclusive (HH:MM), 24h format",
-                        },
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "name": "search_claims",
-                "description": (
-                    "Search insurance claims by patient, payer, procedure, "
-                    "date of service range, or status."
-                ),
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "query": {
-                            "type": "string",
-                            "description": "Text to search: patient name, payer, or procedure",
-                        },
-                        "date_from": {"type": "string", "description": "Start date of service inclusive (YYYY-MM-DD)"},
-                        "date_to":   {"type": "string", "description": "End date of service inclusive (YYYY-MM-DD)"},
-                        "status": {
-                            "type": "string",
-                            "enum": ["pending", "paid", "denied"],
-                        },
-                        "patient_id":     {"type": "string", "description": "Exact patient ID (e.g. P-1001)"},
-                        "procedure_code": {"type": "string", "description": "Procedure code (e.g. D1110)"},
-                        "payer":          {"type": "string", "description": "Insurance payer name"},
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "name": "search_knowledge",
-                "description": (
-                    "Search the knowledge base for insurance policies, treatment FAQs, "
-                    "and other documents. Use for general questions not covered by appointments or claims. "
-                    "Pass the user's question exactly as asked — do not rephrase or expand it."
-                ),
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "query": {
-                            "type": "string",
-                            "description": "The user's question verbatim",
-                        },
-                    },
-                    "required": ["query"],
-                },
-            },
+            _tool(
+                "search_appointments",
+                "Search appointments by patient name, provider, procedure, date range, or status. "
+                "Use date_from and date_to for ranges (e.g. a full month). All dates must be YYYY-MM-DD.",
+                SearchAppointmentsArgs,
+            ),
+            _tool(
+                "search_claims",
+                "Search insurance claims by patient, payer, procedure, date of service range, or status. "
+                "Only set status if the user explicitly asks for a specific status. "
+                "Do not assume a default status — omit it to return all claims.",
+                SearchClaimsArgs,
+            ),
+            _tool(
+                "search_knowledge",
+                "Search the knowledge base for insurance policies, treatment FAQs, and other documents. "
+                "Use for general questions not covered by appointments or claims. "
+                "Pass the user's question exactly as asked — do not rephrase or expand it.",
+                SearchKnowledgeArgs,
+            ),
         ]
 
     def _execute(self, name: str, args: dict) -> list:
+        args = {k: v for k, v in args.items() if v != "" and v is not None}
+        if self.session.get("role") == "patient" and self.session.get("patient_id"):
+            if name in ("search_appointments", "search_claims"):
+                args["patient_id"] = self.session["patient_id"]
         if name == "search_appointments":
             return self._search_appointments(**args)
         if name == "search_claims":
@@ -215,21 +219,27 @@ class RetrieverAgent(BaseAgent):
         if query:
             conditions.append("search_vector @@ websearch_to_tsquery('english', %s)")
             params.append(query)
+
         if date_from and _valid_date(date_from):
             conditions.append("date_of_service >= %s")
             params.append(date_from)
+
         if date_to and _valid_date(date_to):
             conditions.append("date_of_service <= %s")
             params.append(date_to)
+
         if status and status in _VALID_CLAIM_STATUSES:
             conditions.append("status = %s")
             params.append(status)
+
         if patient_id:
             conditions.append("patient_id = %s")
             params.append(patient_id)
+
         if procedure_code:
             conditions.append("procedure_code = %s")
             params.append(procedure_code.upper())
+
         if payer:
             conditions.append("payer ILIKE %s")
             params.append(f"%{payer}%")

@@ -54,13 +54,20 @@ def setup():
 
     print("\nRunning ingest...")
     from app.ingest.ingest import ingest_file
-    files = [
-        ("mock_data/appointments.csv",  "appointments"),
-        ("mock_data/claims.csv",        "claims"),
-        ("mock_data/insurance_faq.txt", "data_sources"),
-    ]
-    for file_path, table in files:
-        ingest_file(file_path, tenant_id="clinic-demo", table=table)
+
+    FILE_TABLE_MAP = {
+        "appointments.csv": "appointments",
+        "claims.csv":       "claims",
+    }
+
+    mock_root = Path(__file__).parent / "mock_data"
+    for clinic_dir in sorted(mock_root.iterdir()):
+        if not clinic_dir.is_dir():
+            continue
+        tenant_id = clinic_dir.name
+        for file_path in sorted(clinic_dir.iterdir()):
+            table = FILE_TABLE_MAP.get(file_path.name, "data_sources")
+            ingest_file(str(file_path), tenant_id=tenant_id, table=table)
 
     print("Ingest complete.")
 

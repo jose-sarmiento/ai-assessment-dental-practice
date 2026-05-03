@@ -1,6 +1,0 @@
-claim_id,patient_id,patient_name,date_of_service,procedure_code,procedure_desc,billed_amount,insurance_paid,patient_owed,status,payer,notes
-CLM-2024-001,P-1001,Jane Smith,2026-03-15,D1110,Adult Prophylaxis,180.00,144.00,36.00,paid,Delta Dental PPO,Covered at 80%
-CLM-2024-002,P-1002,Carlos Rivera,2026-03-20,D2391,Composite Resin 1 Surface Posterior,320.00,160.00,160.00,pending,MetLife,Awaiting EOB
-CLM-2024-003,P-1003,Amy Chen,2026-04-01,D2712,Crown Porcelain Fused,1200.00,600.00,600.00,denied,Cigna,Missing pre-auth — resubmit with D7310 code
-CLM-2024-004,P-1004,John Doe,2026-04-10,D0140,Limited Oral Evaluation,95.00,76.00,19.00,paid,Delta Dental PPO,Covered at 80%
-CLM-2024-005,P-1005,Maria Lopez,2026-04-15,D8670,Orthodontic Retention,300.00,0.00,300.00,pending,Humana,Lifetime max may be reached — verify

@@ -33,7 +33,7 @@ class ClaimsDriver(BaseDriver):
                     "status":          row.get("status", "pending"),
                     "payer":           row.get("payer", ""),
                     "notes":           row.get("notes", ""),
-                    "tenant_id":       self.tenant_id,
+                    "tenant_id":       row.get("tenant_id") or self.tenant_id,
                 })
         return rows
 

@@ -1,0 +1,6 @@
+claim_id,tenant_id,tenant_name,patient_id,patient_name,date_of_service,procedure_code,procedure_desc,billed_amount,insurance_paid,patient_owed,status,payer,notes
+CLM-B-001,clinic-b,Bright Smiles Dental,P-2001,Tom Harris,2026-03-10,D1110,Adult Prophylaxis,180.00,144.00,36.00,paid,Delta Dental PPO,Covered at 80%
+CLM-B-002,clinic-b,Bright Smiles Dental,P-2002,Sara Mitchell,2026-03-18,D2750,Crown Porcelain Fused High Noble,1350.00,675.00,675.00,pending,Aetna,Pre-auth received
+CLM-B-003,clinic-b,Bright Smiles Dental,P-2003,David Park,2026-04-05,D7210,Extraction Erupted Tooth,250.00,200.00,50.00,paid,MetLife,Wisdom tooth #32
+CLM-B-004,clinic-b,Bright Smiles Dental,P-2004,Linda Torres,2026-04-20,D3330,Endodontic Molar,980.00,0.00,980.00,denied,Cigna,Not covered under current plan
+CLM-B-005,clinic-b,Bright Smiles Dental,P-2005,Kevin Walsh,2026-04-28,D4341,Periodontal Scaling Root Planing,650.00,520.00,130.00,pending,Humana,Awaiting EOB

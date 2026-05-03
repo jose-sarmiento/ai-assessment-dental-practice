@@ -2,6 +2,28 @@
 CREATE EXTENSION IF NOT EXISTS vector;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- ── sessions ──────────────────────────────────────────────────────────────────
+CREATE TABLE sessions (
+    id           TEXT PRIMARY KEY,
+    tenant_id    TEXT NOT NULL,
+    tenant_name  TEXT,
+    role         TEXT NOT NULL,
+    patient_id   TEXT,
+    patient_name TEXT,
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ── messages ───────────────────────────────────────────────────────────────────
+CREATE TABLE messages (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    session_id  TEXT NOT NULL REFERENCES sessions(id),
+    role        TEXT NOT NULL,
+    content     TEXT NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX messages_session_idx ON messages (session_id, created_at);
+
 -- ── appointments ──────────────────────────────────────────────────────────────
 -- Flat denormalized mirror of the practice management system appointments
 CREATE TABLE appointments (

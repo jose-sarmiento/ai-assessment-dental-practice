@@ -33,7 +33,7 @@ class AppointmentsDriver(BaseDriver):
                     "procedure_desc": procedure_desc,
                     "status":         row.get("status", "scheduled"),
                     "notes":          row.get("notes", ""),
-                    "tenant_id":      self.tenant_id,
+                    "tenant_id":      row.get("tenant_id") or self.tenant_id,
                 })
         return rows
 

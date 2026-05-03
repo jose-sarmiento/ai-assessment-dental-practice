@@ -1,32 +1,20 @@
 import json
 import os
+import time
 from typing import Generator
 
+import httpx
 from openai import OpenAI
 
-_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-_MODEL = "gpt-4.1"
-_MAX_STEPS = 5
-
-# ANSI colors
-_CYAN   = "\033[96m"
-_YELLOW = "\033[93m"
-_GREEN  = "\033[92m"
-_DIM    = "\033[2m"
-_RESET  = "\033[0m"
-
-
-def _log_tool_call(name: str, args: dict) -> None:
-    params = ", ".join(f"{k}={repr(v)}" for k, v in args.items())
-    print(f"\n{_CYAN}⚙ tool call:{_RESET} {_YELLOW}{name}{_RESET}({_DIM}{params}{_RESET})")
-
-
-def _log_answer_start() -> None:
-    print(f"\n{_GREEN}", end="", flush=True)
-
-
-def _log_answer_end() -> None:
-    print(_RESET, end="", flush=True)
+_client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY"),
+    max_retries=0,
+    timeout=httpx.Timeout(connect=5.0, read=None, write=10.0, pool=5.0),
+)
+_MODEL       = "gpt-4.1"
+_MAX_STEPS   = 5
+_MAX_RETRIES = 3
+_RETRY_DELAY = 3
 
 
 class BaseAgent:
@@ -54,20 +42,26 @@ class BaseAgent:
             tool_call_name = None
             tool_call_id = None
             tool_call_args = ""
-            answer_started = False
 
-            stream = _client.responses.create(
-                model=_MODEL,
-                input=input_messages,
-                tools=self.tools(),
-                stream=True,
-            )
+            stream = None
+            for attempt in range(1, _MAX_RETRIES + 1):
+                try:
+                    stream = _client.responses.create(
+                        model=_MODEL,
+                        input=input_messages,
+                        tools=self.tools(),
+                        stream=True,
+                    )
+                    break
+                except Exception:
+                    if attempt < _MAX_RETRIES:
+                        yield {"type": "waiting", "attempt": attempt, "max": _MAX_RETRIES}
+                        time.sleep(_RETRY_DELAY)
+                    else:
+                        raise
 
             for event in stream:
                 if event.type == "response.output_text.delta":
-                    if not answer_started:
-                        _log_answer_start()
-                        answer_started = True
                     yield event.delta
 
                 elif event.type == "response.output_item.added":
@@ -83,8 +77,6 @@ class BaseAgent:
                         break
 
                 elif event.type == "response.completed":
-                    if answer_started:
-                        _log_answer_end()
                     return
 
             if not tool_call_name:
@@ -95,7 +87,7 @@ class BaseAgent:
             except json.JSONDecodeError:
                 args = {}
 
-            _log_tool_call(tool_call_name, args)
+            yield {"type": "tool_call", "name": tool_call_name, "args": args}
 
             result = self._execute(tool_call_name, args)
 
