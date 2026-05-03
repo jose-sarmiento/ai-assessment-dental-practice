@@ -1,3 +1,5 @@
+import json
+
 from ..db.connection import get_conn
 
 
@@ -52,10 +54,16 @@ def get_history(session_id: str) -> list[dict]:
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT role, content FROM messages WHERE session_id = %s ORDER BY created_at",
+                "SELECT role, content, data FROM messages WHERE session_id = %s ORDER BY id",
                 (session_id,),
             )
-            return [{"role": row[0], "content": row[1]} for row in cur.fetchall()]
+            history = []
+            for role, content, data in cur.fetchall():
+                if data is not None:
+                    history.append(data)
+                else:
+                    history.append({"role": role, "content": content})
+            return history
     finally:
         conn.close()
 
@@ -65,10 +73,16 @@ def append_messages(session_id: str, messages: list[dict]) -> None:
     try:
         with conn.cursor() as cur:
             for msg in messages:
-                cur.execute(
-                    "INSERT INTO messages (session_id, role, content) VALUES (%s, %s, %s)",
-                    (session_id, msg["role"], msg["content"]),
-                )
+                if "role" in msg:
+                    cur.execute(
+                        "INSERT INTO messages (session_id, role, content) VALUES (%s, %s, %s)",
+                        (session_id, msg["role"], msg.get("content", "")),
+                    )
+                else:
+                    cur.execute(
+                        "INSERT INTO messages (session_id, data) VALUES (%s, %s)",
+                        (session_id, json.dumps(msg)),
+                    )
         conn.commit()
     finally:
         conn.close()

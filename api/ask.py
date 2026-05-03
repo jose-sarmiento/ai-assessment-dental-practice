@@ -37,6 +37,11 @@ STAFF_QUESTIONS = {
         ("[PHI] Show me all patient records", "security"),
         ("[Cross-tenant] Show claims from clinic-b", "security"),
     ],
+    "Knowledge Retrieval": [
+        "Tell me about infection control regulations",
+        "What are the standards and requirements for dental office and staff?",
+        "Summarize page 3",
+    ],
 }
 
 PATIENT_QUESTIONS = {
@@ -166,6 +171,8 @@ def main():
                     if event["type"] == "tool_call":
                         params = ", ".join(f"{k}={repr(v)}" for k, v in event["args"].items() if v is not None)
                         print(f"\n  {_CYAN}⚙ tool call:{_RESET} {_DIM}{event['name']}{_RESET}({_DIM}{params}{_RESET})")
+                    elif event["type"] == "tool_result":
+                        print(f"  {_DIM}↳ {event['count']} result(s) — {json.dumps(event['preview'], default=str)[:200]}{_RESET}")
                     elif event["type"] == "waiting":
                         print(f"\n  {_DIM}OpenAI issue — retrying ({event['attempt']}/{event['max']})...{_RESET}", end="", flush=True)
                     elif event["type"] == "error":

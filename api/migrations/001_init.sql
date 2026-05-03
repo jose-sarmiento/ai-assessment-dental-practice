@@ -15,14 +15,15 @@ CREATE TABLE sessions (
 
 -- ── messages ───────────────────────────────────────────────────────────────────
 CREATE TABLE messages (
-    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id          BIGSERIAL PRIMARY KEY,
     session_id  TEXT NOT NULL REFERENCES sessions(id),
-    role        TEXT NOT NULL,
-    content     TEXT NOT NULL,
+    role        TEXT,
+    content     TEXT,
+    data        JSONB,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX messages_session_idx ON messages (session_id, created_at);
+CREATE INDEX messages_session_idx ON messages (session_id, id);
 
 -- ── appointments ──────────────────────────────────────────────────────────────
 -- Flat denormalized mirror of the practice management system appointments
@@ -119,14 +120,17 @@ CREATE TABLE data_sources (
     tenant_id       TEXT NOT NULL,
     doc_type        TEXT NOT NULL,
     source          TEXT NOT NULL,
+    document_id     TEXT NOT NULL,
     page            INTEGER NOT NULL DEFAULT 1,
     chunk_index     INTEGER NOT NULL,
     effective_date  DATE,
+    metadata        JSONB NOT NULL DEFAULT '{}',
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX data_sources_tenant_idx       ON data_sources (tenant_id);
 CREATE INDEX data_sources_tenant_doc_idx   ON data_sources (tenant_id, doc_type);
+CREATE INDEX data_sources_document_idx     ON data_sources (document_id);
 CREATE INDEX data_sources_search_idx       ON data_sources USING GIN (search_vector);
 CREATE INDEX data_sources_embedding_idx    ON data_sources USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
 

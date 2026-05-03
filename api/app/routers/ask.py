@@ -51,10 +51,12 @@ async def ask_endpoint(
             yield f"data: {json.dumps({'type': 'error', 'value': 'An error occurred. Check server logs.'})}\n\n"
         finally:
             try:
-                append_messages(body.session_id, [
-                    {"role": "user",      "content": body.query},
-                    {"role": "assistant", "content": answer},
-                ])
+                messages = (
+                    [{"role": "user", "content": body.query}]
+                    + agent.tool_messages
+                    + [{"role": "assistant", "content": answer}]
+                )
+                append_messages(body.session_id, messages)
             except Exception:
                 log.error("[ask] failed to save messages", exc_info=True)
 

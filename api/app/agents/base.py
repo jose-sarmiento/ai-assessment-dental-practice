@@ -12,7 +12,7 @@ _client = OpenAI(
     timeout=httpx.Timeout(connect=5.0, read=None, write=10.0, pool=5.0),
 )
 _MODEL       = "gpt-4.1"
-_MAX_STEPS   = 5
+_MAX_STEPS   = 15
 _MAX_RETRIES = 3
 _RETRY_DELAY = 3
 
@@ -22,6 +22,7 @@ class BaseAgent:
     def __init__(self, tenant_id: str):
         self.tenant_id = tenant_id
         self._citations: list[str] = []
+        self.tool_messages: list[dict] = []
 
     def prompt(self) -> str:
         return "You are a helpful assistant."
@@ -34,6 +35,7 @@ class BaseAgent:
 
     def run(self, history: list[dict]) -> tuple[Generator, list[str]]:
         self._citations = []
+        self.tool_messages = []
         input_messages = [{"role": "system", "content": self.prompt()}, *history]
         return self._loop(input_messages), self._citations
 
@@ -42,6 +44,9 @@ class BaseAgent:
             tool_call_name = None
             tool_call_id = None
             tool_call_args = ""
+
+            import logging as _logging
+            _logging.getLogger(__name__).info(f"[history] {input_messages}")
 
             stream = None
             for attempt in range(1, _MAX_RETRIES + 1):
@@ -90,17 +95,26 @@ class BaseAgent:
             yield {"type": "tool_call", "name": tool_call_name, "args": args}
 
             result = self._execute(tool_call_name, args)
+            import logging as _logging
+            _logging.getLogger(__name__).info(
+                f"[tool_result] {tool_call_name} → {len(result)} results\n{result}"
+            )
+            yield {"type": "tool_result", "name": tool_call_name, "count": len(result), "preview": result[:2]}
 
-            input_messages.append({
+            fc_msg = {
                 "type": "function_call",
                 "name": tool_call_name,
                 "call_id": tool_call_id,
                 "arguments": tool_call_args,
-            })
-            input_messages.append({
+            }
+            fr_msg = {
                 "type": "function_call_output",
                 "call_id": tool_call_id,
                 "output": json.dumps(result),
-            })
+            }
+            input_messages.append(fc_msg)
+            input_messages.append(fr_msg)
+            self.tool_messages.append(fc_msg)
+            self.tool_messages.append(fr_msg)
 
         yield "\n\nSorry, I couldn't complete the request."

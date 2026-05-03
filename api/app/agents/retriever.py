@@ -1,3 +1,4 @@
+import re
 from datetime import date as Date
 from enum import Enum
 from typing import Optional
@@ -48,6 +49,28 @@ class SearchKnowledgeArgs(BaseModel):
     query: str = Field(..., description="The user's question verbatim")
 
 
+class SearchInDocumentArgs(BaseModel):
+    document_id: str = Field(..., description="The document_id field from search results — stored as doc_[uuid] format (e.g. doc_3f2a1b4c-...). Do NOT use the source/filename.")
+    query:       str = Field(..., description="The user's question verbatim")
+
+
+class ReadDocumentArgs(BaseModel):
+    document_id: str           = Field(..., description="The document_id field from search results — stored as doc_[uuid] format (e.g. doc_3f2a1b4c-...). Do NOT use the source/filename.")
+    page:        Optional[int] = Field(None, description="Read all chunks for a specific page number. Use this when the user asks to read or summarize a specific page.")
+    chunk_from:  int           = Field(0,   description="Start chunk index (0-based, inclusive). Used when page is not set.")
+    chunk_to:    int           = Field(5,   description="End chunk index (inclusive). Use metadata.total_chunks to know the range.")
+
+
+
+
+_DOC_ID_PATTERN = re.compile(
+    r"^doc_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+)
+
+def _invalid_doc_id(document_id: str) -> list[dict] | None:
+    if not _DOC_ID_PATTERN.match(document_id):
+        return [{"error": f"Invalid document_id '{document_id}'. Must be in doc_[uuid] format (e.g. doc_3f2a1b4c-9d2e-4a1b-8c7f-1234567890ab)."}]
+    return None
 
 
 # ── Agent ──────────────────────────────────────────────────────────────────────
@@ -87,13 +110,15 @@ class RetrieverAgent(BaseAgent):
         return (
             f"Today is {now.strftime('%A, %B %d, %Y')} and the current time is {now.strftime('%H:%M')}.\n\n"
             f"{identity} {scope}\n\n"
-            "You have access to three tools:\n"
+            "You have access to the following tools:\n"
             "- search_appointments: look up appointment records\n"
             "- search_claims: look up insurance claim records\n"
-            "- search_knowledge: search policy documents and FAQs\n\n"
+            "- search_knowledge: global search across all knowledge base documents (FAQs, policies, guides). Use this first for any general question.\n"
+            "- search_in_document: search within a specific document by document_id. Use this for follow-up questions when the user is already asking about a specific document returned by search_knowledge.\n"
+            "- read_document: traverse and read chunks from a known document by document_id. Use this when the user wants to read a specific page, continue reading, or scroll through content across turns — not a one-shot full read.\n\n"
             "Rules you must follow:\n"
             "1. Always use a tool before answering. Never answer from your own knowledge.\n"
-            "2. If the tools return no results, give a specific response like 'No pending claims were found for you' rather than a generic message.\n"
+            "2. If the tools return no results, give a specific response rather than a generic message.\n"
             "3. Every successful answer must end with a 'Sources:' line listing the record IDs or documents used.\n"
             "4. Do not infer, assume, or fill gaps with outside knowledge. Stick strictly to retrieved data.\n"
             "5. If the question is outside the scope of appointments, claims, or practice documents, say so."
@@ -121,6 +146,20 @@ class RetrieverAgent(BaseAgent):
                 "Pass the user's question exactly as asked — do not rephrase or expand it.",
                 SearchKnowledgeArgs,
             ),
+            _tool(
+                "search_in_document",
+                "Search within a specific document by its document_id. "
+                "Use after search_knowledge returns a relevant document and you need to find more specific content within it.",
+                SearchInDocumentArgs,
+            ),
+            _tool(
+                "read_document",
+                "Read the actual content of a known document — use this to traverse or scroll through a document across multiple turns. "
+                "Fetch all chunks of a specific page using the page parameter, or fetch a range of chunks using chunk_from/chunk_to. "
+                "Each returned chunk includes metadata with total_chunks and total_pages so you always know your position. "
+                "Use this when the user wants to read a specific page, continue reading, or access the full content of a document.",
+                ReadDocumentArgs,
+            ),
         ]
 
     def _execute(self, name: str, args: dict) -> list:
@@ -134,6 +173,10 @@ class RetrieverAgent(BaseAgent):
             return self._search_claims(**args)
         if name == "search_knowledge":
             return self._search_knowledge(**args)
+        if name == "search_in_document":
+            return self._search_in_document(**args)
+        if name == "read_document":
+            return self._read_document(**args)
         return []
 
     def _search_appointments(
@@ -271,6 +314,53 @@ class RetrieverAgent(BaseAgent):
         for r in results:
             r["_citation"] = f"{r['source']} (p{r['page']})"
         return results
+
+    def _search_in_document(self, document_id: str, query: str) -> list[dict]:
+        if err := _invalid_doc_id(document_id):
+            return err
+        results = hybrid_search(query, self.tenant_id, top_k=5, document_id=document_id)
+        for r in results:
+            r["_citation"] = f"{r['source']} (chunk {r['chunk_index']})"
+        return results
+
+    def _read_document(
+        self,
+        document_id: str,
+        page: int | None = None,
+        chunk_from: int = 0,
+        chunk_to: int = 5,
+    ) -> list[dict]:
+        if err := _invalid_doc_id(document_id):
+            return err
+        if page is not None:
+            sql = """
+                SELECT text, source, document_id, page, chunk_index, metadata
+                FROM data_sources
+                WHERE tenant_id = %s AND document_id = %s AND page = %s
+                ORDER BY chunk_index
+            """
+            params = (self.tenant_id, document_id, page)
+        else:
+            sql = """
+                SELECT text, source, document_id, page, chunk_index, metadata
+                FROM data_sources
+                WHERE tenant_id = %s AND document_id = %s
+                  AND chunk_index >= %s AND chunk_index <= %s
+                ORDER BY chunk_index
+            """
+            params = (self.tenant_id, document_id, chunk_from, chunk_to)
+
+        conn = get_conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(sql, params)
+                cols = [d[0] for d in cur.description]
+                rows = [dict(zip(cols, row)) for row in cur.fetchall()]
+                for row in rows:
+                    row["_citation"] = f"{row['source']} (p{row['page']}, chunk {row['chunk_index']})"
+                return rows
+        finally:
+            conn.close()
 
 
 def _valid_date(value: str) -> bool:
