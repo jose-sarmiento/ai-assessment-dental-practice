@@ -310,7 +310,7 @@ class RetrieverAgent(BaseAgent):
             conn.close()
 
     def _search_knowledge(self, query: str) -> list[dict]:
-        results = hybrid_search(query, self.tenant_id, top_k=5)
+        results = hybrid_search(query, self.tenant_id, top_k=5, role=self.session.get("role", "staff"))
         for r in results:
             r["_citation"] = f"{r['source']} (p{r['page']})"
         return results
@@ -318,7 +318,7 @@ class RetrieverAgent(BaseAgent):
     def _search_in_document(self, document_id: str, query: str) -> list[dict]:
         if err := _invalid_doc_id(document_id):
             return err
-        results = hybrid_search(query, self.tenant_id, top_k=5, document_id=document_id)
+        results = hybrid_search(query, self.tenant_id, top_k=5, document_id=document_id, role=self.session.get("role", "staff"))
         for r in results:
             r["_citation"] = f"{r['source']} (chunk {r['chunk_index']})"
         return results

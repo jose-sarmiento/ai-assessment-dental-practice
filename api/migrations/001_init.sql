@@ -121,6 +121,7 @@ CREATE TABLE data_sources (
     doc_type        TEXT NOT NULL,
     source          TEXT NOT NULL,
     document_id     TEXT NOT NULL,
+    audience        TEXT NOT NULL DEFAULT 'staff',
     page            INTEGER NOT NULL DEFAULT 1,
     chunk_index     INTEGER NOT NULL,
     effective_date  DATE,

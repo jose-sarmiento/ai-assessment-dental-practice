@@ -7,7 +7,7 @@ from .connection import get_conn
 _UPSERT_SQL = """
     INSERT INTO data_sources (
         text, embedding, tenant_id, doc_type, source, document_id,
-        page, chunk_index, effective_date, metadata
+        audience, page, chunk_index, effective_date, metadata
     ) VALUES %s
     ON CONFLICT DO NOTHING
 """
@@ -25,6 +25,7 @@ def upsert_data_sources(records: list[dict]) -> None:
             rec["doc_type"],
             rec["source"],
             rec["document_id"],
+            rec.get("audience", "staff"),
             rec["page"],
             rec["chunk_index"],
             rec.get("effective_date"),

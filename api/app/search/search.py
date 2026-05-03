@@ -6,9 +6,15 @@ from ..ingest.embeddings import embed
 _RRF_K = 60  # RRF constant — higher = smoother rank fusion
 
 
-def vector_search(query: str, tenant_id: str, top_k: int = 10, document_id: str | None = None) -> list[dict]:
+def _audience_clause(role: str) -> str:
+    if role == "patient":
+        return "AND audience IN ('all', 'patient')"
+    return ""  # staff sees everything
+
+
+def vector_search(query: str, tenant_id: str, top_k: int = 10, document_id: str | None = None, role: str = "staff") -> list[dict]:
     vec = np.array(embed([query])[0], dtype=np.float32)
-    extra = "AND document_id = %s" if document_id else ""
+    extra = ("AND document_id = %s " if document_id else "") + _audience_clause(role)
     sql = f"""
         SELECT text, source, document_id, page, chunk_index, doc_type,
                1 - (embedding <=> %s) AS score
@@ -27,8 +33,8 @@ def vector_search(query: str, tenant_id: str, top_k: int = 10, document_id: str 
         conn.close()
 
 
-def lexical_search(query: str, tenant_id: str, top_k: int = 10, document_id: str | None = None) -> list[dict]:
-    extra = "AND document_id = %s" if document_id else ""
+def lexical_search(query: str, tenant_id: str, top_k: int = 10, document_id: str | None = None, role: str = "staff") -> list[dict]:
+    extra = ("AND document_id = %s " if document_id else "") + _audience_clause(role)
     sql = f"""
         SELECT text, source, document_id, page, chunk_index, doc_type,
                ts_rank(search_vector, websearch_to_tsquery('english', %s)) AS score
@@ -49,9 +55,9 @@ def lexical_search(query: str, tenant_id: str, top_k: int = 10, document_id: str
         conn.close()
 
 
-def hybrid_search(query: str, tenant_id: str, top_k: int = 10, document_id: str | None = None) -> list[dict]:
-    vector_results  = vector_search(query, tenant_id, top_k, document_id)
-    lexical_results = lexical_search(query, tenant_id, top_k, document_id)
+def hybrid_search(query: str, tenant_id: str, top_k: int = 10, document_id: str | None = None, role: str = "staff") -> list[dict]:
+    vector_results  = vector_search(query, tenant_id, top_k, document_id, role)
+    lexical_results = lexical_search(query, tenant_id, top_k, document_id, role)
 
     rrf_scores: dict[str, float] = {}
     merged: dict[str, dict] = {}

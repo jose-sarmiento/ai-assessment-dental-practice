@@ -59,15 +59,22 @@ def setup():
         "appointments.csv": "appointments",
         "claims.csv":       "claims",
     }
+    AUDIENCE_DIRS = {"staff", "patient"}
 
     mock_root = Path(__file__).parent / "mock_data"
     for clinic_dir in sorted(mock_root.iterdir()):
         if not clinic_dir.is_dir():
             continue
         tenant_id = clinic_dir.name
-        for file_path in sorted(clinic_dir.iterdir()):
-            table = FILE_TABLE_MAP.get(file_path.name, "data_sources")
-            ingest_file(str(file_path), tenant_id=tenant_id, table=table)
+        for entry in sorted(clinic_dir.iterdir()):
+            if entry.is_dir() and entry.name in AUDIENCE_DIRS:
+                # staff/ or patient/ subfolder — all files are data_sources with that audience
+                audience = entry.name
+                for file_path in sorted(entry.iterdir()):
+                    ingest_file(str(file_path), tenant_id=tenant_id, table="data_sources", audience=audience)
+            elif entry.is_file():
+                table = FILE_TABLE_MAP.get(entry.name, "data_sources")
+                ingest_file(str(entry), tenant_id=tenant_id, table=table)
 
     print("Ingest complete.")
 
