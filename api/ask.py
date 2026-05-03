@@ -160,6 +160,7 @@ def main():
                 json={"query": query, "session_id": session["session_id"]},
                 headers={"X-Tenant-Id": session["tenant_id"], "X-User-Role": session["role"]},
             ) as response:
+                print(f"\n  {_DIM}thinking...{_RESET}", end="", flush=True)
                 answer_started = False
                 for line in response.iter_lines():
                     if not line.startswith("data:"):
@@ -170,13 +171,21 @@ def main():
                     event = json.loads(raw)
                     if event["type"] == "token":
                         if not answer_started:
-                            print(f"\n  AI: {_GREEN}", end="", flush=True)
+                            print(f"\r  AI: {_GREEN}", end="", flush=True)
                             answer_started = True
                         print(event["value"], end="", flush=True)
                     elif event["type"] == "error":
-                        print(f"\n  {_RED}Error: {event['value']}{_RESET}")
+                        print(f"\r  {_RED}Error: {event['value']}{_RESET}")
 
         print(_RESET)
+
+        m = httpx.get(f"{API_BASE}/metrics").json()
+        print(
+            f"  {_DIM}metrics → reqs:{m['ask_count']} "
+            f"p95:{m['p95_latency_ms']}ms "
+            f"hit@k:{m['retrieval_hit_at_k']} "
+            f"tools:{m['tool_call_counts']}{_RESET}"
+        )
 
 
 if __name__ == "__main__":

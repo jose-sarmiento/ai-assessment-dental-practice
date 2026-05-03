@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 from ..agents.retriever import RetrieverAgent
 from ..core.deps import get_tenant_id, get_user_role
+from ..core.metrics import record_request, record_retrieval, record_tool_call
 from ..core.session import append_messages, get_history, get_session
 
 router = APIRouter()
@@ -60,6 +61,21 @@ async def ask_endpoint(
                 f"[ask] done session={body.session_id} latency={latency}s "
                 f"tokens=({in_tok}in/{out_tok}out) cost=${cost}"
             )
+
+            record_request(latency * 1000)
+            for msg in agent.tool_messages:
+                if msg.get("type") == "function_call":
+                    name = msg.get("name", "")
+                    record_tool_call(name)
+                    if name == "search_knowledge":
+                        import json as _json
+                        output_msg = next(
+                            (m for m in agent.tool_messages if m.get("type") == "function_call_output" and m.get("call_id") == msg.get("call_id")),
+                            None,
+                        )
+                        if output_msg:
+                            results = _json.loads(output_msg.get("output", "[]"))
+                            record_retrieval(hit=len(results) > 0)
 
             try:
                 messages = (

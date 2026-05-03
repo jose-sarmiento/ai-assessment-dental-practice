@@ -6,6 +6,7 @@ from fastapi import FastAPI
 
 from app.core.config import settings
 from app.core.logging import JSONFormatter, PHIRedactFilter
+from app.core.metrics import snapshot
 from app.routers import ask, session
 
 logging.basicConfig(level=logging.INFO)
@@ -35,3 +36,8 @@ app.include_router(session.router)
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/metrics")
+async def metrics():
+    return snapshot()
