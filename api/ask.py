@@ -168,20 +168,13 @@ def main():
                     if raw == "[DONE]":
                         break
                     event = json.loads(raw)
-                    if event["type"] == "tool_call":
-                        params = ", ".join(f"{k}={repr(v)}" for k, v in event["args"].items() if v is not None)
-                        print(f"\n  {_CYAN}⚙ tool call:{_RESET} {_DIM}{event['name']}{_RESET}({_DIM}{params}{_RESET})")
-                    elif event["type"] == "tool_result":
-                        print(f"  {_DIM}↳ {event['count']} result(s) — {json.dumps(event['preview'], default=str)[:200]}{_RESET}")
-                    elif event["type"] == "waiting":
-                        print(f"\n  {_DIM}OpenAI issue — retrying ({event['attempt']}/{event['max']})...{_RESET}", end="", flush=True)
-                    elif event["type"] == "error":
-                        print(f"\n  {_RED}Error: {event['value']}{_RESET}")
-                    elif event["type"] == "token":
+                    if event["type"] == "token":
                         if not answer_started:
                             print(f"\n  AI: {_GREEN}", end="", flush=True)
                             answer_started = True
                         print(event["value"], end="", flush=True)
+                    elif event["type"] == "error":
+                        print(f"\n  {_RED}Error: {event['value']}{_RESET}")
 
         print(_RESET)
 

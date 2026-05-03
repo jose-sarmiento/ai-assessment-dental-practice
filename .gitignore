@@ -24,4 +24,5 @@ secrets/
 # Misc
 .DS_Store
 *.log
+api/logs/*.log
 docs/

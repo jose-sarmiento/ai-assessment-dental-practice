@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import time
 from typing import Generator
@@ -16,6 +17,8 @@ _MAX_STEPS   = 15
 _MAX_RETRIES = 3
 _RETRY_DELAY = 3
 
+log = logging.getLogger(__name__)
+
 
 class BaseAgent:
 
@@ -23,6 +26,7 @@ class BaseAgent:
         self.tenant_id = tenant_id
         self._citations: list[str] = []
         self.tool_messages: list[dict] = []
+        self.usage: dict = {"input_tokens": 0, "output_tokens": 0}
 
     def prompt(self) -> str:
         return "You are a helpful assistant."
@@ -45,9 +49,6 @@ class BaseAgent:
             tool_call_id = None
             tool_call_args = ""
 
-            import logging as _logging
-            _logging.getLogger(__name__).info(f"[history] {input_messages}")
-
             stream = None
             for attempt in range(1, _MAX_RETRIES + 1):
                 try:
@@ -58,9 +59,9 @@ class BaseAgent:
                         stream=True,
                     )
                     break
-                except Exception:
+                except Exception as e:
                     if attempt < _MAX_RETRIES:
-                        yield {"type": "waiting", "attempt": attempt, "max": _MAX_RETRIES}
+                        log.warning(f"[agent] OpenAI error (attempt {attempt}/{_MAX_RETRIES}): {e} — retrying in {_RETRY_DELAY}s")
                         time.sleep(_RETRY_DELAY)
                     else:
                         raise
@@ -82,6 +83,10 @@ class BaseAgent:
                         break
 
                 elif event.type == "response.completed":
+                    if hasattr(event.response, "usage") and event.response.usage:
+                        u = event.response.usage
+                        self.usage["input_tokens"]  += getattr(u, "input_tokens", 0)
+                        self.usage["output_tokens"] += getattr(u, "output_tokens", 0)
                     return
 
             if not tool_call_name:
@@ -92,14 +97,10 @@ class BaseAgent:
             except json.JSONDecodeError:
                 args = {}
 
-            yield {"type": "tool_call", "name": tool_call_name, "args": args}
-
+            filtered = {k: v for k, v in args.items() if v is not None and v != ""}
+            log.info(f"[tool_call] {tool_call_name}({filtered})")
             result = self._execute(tool_call_name, args)
-            import logging as _logging
-            _logging.getLogger(__name__).info(
-                f"[tool_result] {tool_call_name} → {len(result)} results\n{result}"
-            )
-            yield {"type": "tool_result", "name": tool_call_name, "count": len(result), "preview": result[:2]}
+            log.info(f"[tool_result] {tool_call_name} → {len(result)} results")
 
             fc_msg = {
                 "type": "function_call",

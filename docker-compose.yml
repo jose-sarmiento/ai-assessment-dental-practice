@@ -32,6 +32,7 @@ services:
     volumes:
       - .:/workspace
       - ./api/ask.py:/app/ask.py
+      - ./api/logs:/app/logs
     depends_on:
       postgres:
         condition: service_healthy

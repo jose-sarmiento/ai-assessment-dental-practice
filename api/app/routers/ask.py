@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 import traceback
 
 from fastapi import APIRouter, Depends
@@ -12,6 +13,10 @@ from ..core.session import append_messages, get_history, get_session
 
 router = APIRouter()
 log = logging.getLogger(__name__)
+
+# gpt-4.1 pricing (per 1M tokens)
+_COST_INPUT  = 2.00
+_COST_OUTPUT = 8.00
 
 
 class AskRequest(BaseModel):
@@ -26,6 +31,7 @@ async def ask_endpoint(
     tenant_id: str = Depends(get_tenant_id),
     user_role: str = Depends(get_user_role),
 ):
+    started = time.perf_counter()
     log.info(f"[ask] session={body.session_id} tenant={tenant_id} role={user_role}")
 
     history = get_history(body.session_id)
@@ -39,17 +45,22 @@ async def ask_endpoint(
         answer = ""
         try:
             for chunk in stream:
-                if isinstance(chunk, dict):
-                    log.info(f"[ask] tool_call={chunk.get('name')} args={chunk.get('args')}")
-                    yield f"data: {json.dumps(chunk)}\n\n"
-                else:
-                    answer += chunk
-                    yield f"data: {json.dumps({'type': 'token', 'value': chunk})}\n\n"
+                answer += chunk
+                yield f"data: {json.dumps({'type': 'token', 'value': chunk})}\n\n"
         except Exception:
             err = traceback.format_exc()
             log.error(f"[ask] stream error:\n{err}")
             yield f"data: {json.dumps({'type': 'error', 'value': 'An error occurred. Check server logs.'})}\n\n"
         finally:
+            latency = round(time.perf_counter() - started, 3)
+            in_tok  = agent.usage["input_tokens"]
+            out_tok = agent.usage["output_tokens"]
+            cost    = round((in_tok * _COST_INPUT + out_tok * _COST_OUTPUT) / 1_000_000, 6)
+            log.info(
+                f"[ask] done session={body.session_id} latency={latency}s "
+                f"tokens=({in_tok}in/{out_tok}out) cost=${cost}"
+            )
+
             try:
                 messages = (
                     [{"role": "user", "content": body.query}]
