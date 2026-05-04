@@ -40,15 +40,17 @@ async def ask_endpoint(
 
     session = get_session(body.session_id)
     agent = RetrieverAgent(tenant_id=tenant_id, session=session)
-    stream, citations = agent.run(history)
+    stream = agent.run(history)
 
     def event_stream():
         answer = ""
+        error = False
         try:
             for chunk in stream:
                 answer += chunk
                 yield f"data: {json.dumps({'type': 'token', 'value': chunk})}\n\n"
         except Exception:
+            error = True
             err = traceback.format_exc()
             log.error(f"[ask] stream error:\n{err}")
             yield f"data: {json.dumps({'type': 'error', 'value': 'An error occurred. Check server logs.'})}\n\n"
@@ -68,26 +70,25 @@ async def ask_endpoint(
                     name = msg.get("name", "")
                     record_tool_call(name)
                     if name == "search_knowledge":
-                        import json as _json
                         output_msg = next(
                             (m for m in agent.tool_messages if m.get("type") == "function_call_output" and m.get("call_id") == msg.get("call_id")),
                             None,
                         )
                         if output_msg:
-                            results = _json.loads(output_msg.get("output", "[]"))
+                            results = json.loads(output_msg.get("output", "[]"))
                             record_retrieval(hit=len(results) > 0)
 
-            try:
-                messages = (
-                    [{"role": "user", "content": body.query}]
-                    + agent.tool_messages
-                    + [{"role": "assistant", "content": answer}]
-                )
-                append_messages(body.session_id, messages)
-            except Exception:
-                log.error("[ask] failed to save messages", exc_info=True)
+            if not error:
+                try:
+                    messages = (
+                        [{"role": "user", "content": body.query}]
+                        + agent.tool_messages
+                        + [{"role": "assistant", "content": answer}]
+                    )
+                    append_messages(body.session_id, messages)
+                except Exception:
+                    log.error("[ask] failed to save messages", exc_info=True)
 
-            yield f"data: {json.dumps({'type': 'citations', 'value': citations})}\n\n"
             yield "data: [DONE]\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
