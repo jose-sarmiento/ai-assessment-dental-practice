@@ -1,91 +1,38 @@
-appointment_id,tenant_id,tenant_name,patient_name,patient_id,date,time,provider,procedure,status,notes
-APT-001,clinic-a,Smile Dental Clinic,Jane Smith,P-1001,2026-05-10,09:00,Dr. Reyes,Routine Cleaning,scheduled,First visit of the year
-APT-002,clinic-a,Smile Dental Clinic,Carlos Rivera,P-1002,2026-05-10,10:30,Dr. Reyes,Composite Filling D2391,scheduled,Lower left molar
-APT-003,clinic-a,Smile Dental Clinic,Amy Chen,P-1003,2026-05-11,08:00,Dr. Patel,Crown Prep D2712,scheduled,Pre-auth approved
-APT-004,clinic-a,Smile Dental Clinic,John Doe,P-1004,2026-05-11,14:00,Dr. Reyes,Emergency Exam,completed,Tooth #18 pain
-APT-005,clinic-a,Smile Dental Clinic,Maria Lopez,P-1005,2026-05-12,11:00,Dr. Patel,Orthodontic Consult,scheduled,Invisalign evaluation
-APT-006,clinic-a,Smile Dental Clinic,James Wu,P-1006,2026-05-13,09:30,Dr. Reyes,Extraction D7210,scheduled,Wisdom tooth #32
-APT-007,clinic-a,Smile Dental Clinic,Linda Nguyen,P-1007,2026-05-13,13:00,Dr. Patel,Routine Cleaning,scheduled,6-month recall
-APT-008,clinic-a,Smile Dental Clinic,Robert Kim,P-1008,2026-05-14,08:30,Dr. Reyes,Root Canal D3330,scheduled,Tooth #19 — pre-auth sent
-APT-009,clinic-a,Smile Dental Clinic,Patricia Moore,P-1009,2026-05-14,10:00,Dr. Patel,Composite Filling D2392,scheduled,Upper right premolar
-APT-010,clinic-a,Smile Dental Clinic,Kevin Brown,P-1010,2026-05-14,15:00,Dr. Reyes,Periodontal Cleaning D4341,scheduled,4 quadrants
-APT-011,clinic-a,Smile Dental Clinic,Sandra Davis,P-1011,2026-05-15,09:00,Dr. Patel,Crown Delivery D2740,scheduled,Porcelain crown tooth #14
-APT-012,clinic-a,Smile Dental Clinic,Thomas Wilson,P-1012,2026-05-15,11:30,Dr. Reyes,Routine Cleaning,scheduled,Annual recall
-APT-013,clinic-a,Smile Dental Clinic,Nancy Martinez,P-1013,2026-05-16,08:00,Dr. Patel,Implant Consult,scheduled,Replace tooth #30
-APT-014,clinic-a,Smile Dental Clinic,Daniel Anderson,P-1014,2026-05-16,10:00,Dr. Reyes,Extraction D7140,scheduled,Non-restorable #29
-APT-015,clinic-a,Smile Dental Clinic,Betty Taylor,P-1015,2026-05-16,14:30,Dr. Patel,Composite Filling D2391,scheduled,Tooth #4
-APT-016,clinic-a,Smile Dental Clinic,Paul Jackson,P-1016,2026-05-17,09:00,Dr. Reyes,Root Canal D3310,scheduled,Tooth #8 anterior
-APT-017,clinic-a,Smile Dental Clinic,Dorothy White,P-1017,2026-05-17,11:00,Dr. Patel,Routine Cleaning,scheduled,New patient
-APT-018,clinic-a,Smile Dental Clinic,Mark Harris,P-1018,2026-05-17,13:30,Dr. Reyes,Periodontal Exam D0180,scheduled,Bleeding on probing noted
-APT-019,clinic-a,Smile Dental Clinic,Carol Thompson,P-1019,2026-05-18,08:30,Dr. Patel,Orthodontic Adjustment,scheduled,Wire change — upper arch
-APT-020,clinic-a,Smile Dental Clinic,Donald Garcia,P-1020,2026-05-18,10:00,Dr. Reyes,Crown Prep D2712,scheduled,Tooth #3
-APT-021,clinic-a,Smile Dental Clinic,Margaret Martinez,P-1021,2026-05-18,14:00,Dr. Patel,Routine Cleaning,completed,No concerns
-APT-022,clinic-a,Smile Dental Clinic,Steven Robinson,P-1022,2026-05-19,09:00,Dr. Reyes,Composite Filling D2393,scheduled,2 surfaces posterior
-APT-023,clinic-a,Smile Dental Clinic,Ruth Clark,P-1023,2026-05-19,11:30,Dr. Patel,Extraction D7210,scheduled,Tooth #16 impacted
-APT-024,clinic-a,Smile Dental Clinic,Kenneth Rodriguez,P-1024,2026-05-19,13:00,Dr. Reyes,Routine Cleaning,scheduled,6-month recall
-APT-025,clinic-a,Smile Dental Clinic,Sharon Lewis,P-1025,2026-05-20,08:00,Dr. Patel,Implant Placement D6010,scheduled,Site #30 — healed
-APT-026,clinic-a,Smile Dental Clinic,George Lee,P-1026,2026-05-20,10:00,Dr. Reyes,Periodontal Cleaning D4341,scheduled,2 quadrants
-APT-027,clinic-a,Smile Dental Clinic,Donna Walker,P-1027,2026-05-20,14:00,Dr. Patel,Root Canal D3320,scheduled,Tooth #13 bicuspid
-APT-028,clinic-a,Smile Dental Clinic,Edward Hall,P-1028,2026-05-21,09:30,Dr. Reyes,Crown Delivery D2740,scheduled,Tooth #3 final seating
-APT-029,clinic-a,Smile Dental Clinic,Michelle Allen,P-1029,2026-05-21,11:00,Dr. Patel,Composite Filling D2391,scheduled,Tooth #20
-APT-030,clinic-a,Smile Dental Clinic,Ronald Young,P-1030,2026-05-21,15:00,Dr. Reyes,Emergency Exam,scheduled,Broken cusp #15
-APT-031,clinic-a,Smile Dental Clinic,Laura Hernandez,P-1031,2026-05-22,08:00,Dr. Patel,Routine Cleaning,scheduled,Annual recall
-APT-032,clinic-a,Smile Dental Clinic,Brian King,P-1032,2026-05-22,10:30,Dr. Reyes,Extraction D7210,scheduled,Wisdom tooth #17
-APT-033,clinic-a,Smile Dental Clinic,Sarah Wright,P-1033,2026-05-22,13:00,Dr. Patel,Orthodontic Consult,scheduled,Phase 2 evaluation
-APT-034,clinic-a,Smile Dental Clinic,Christopher Lopez,P-1034,2026-05-23,09:00,Dr. Reyes,Composite Filling D2392,scheduled,Tooth #5
-APT-035,clinic-a,Smile Dental Clinic,Amanda Hill,P-1035,2026-05-23,11:00,Dr. Patel,Crown Prep D2712,scheduled,Tooth #19
-APT-036,clinic-a,Smile Dental Clinic,Matthew Scott,P-1036,2026-05-23,14:30,Dr. Reyes,Routine Cleaning,scheduled,New patient — full exam
-APT-037,clinic-a,Smile Dental Clinic,Stephanie Green,P-1037,2026-05-24,08:30,Dr. Patel,Root Canal D3330,scheduled,Tooth #30 molar
-APT-038,clinic-a,Smile Dental Clinic,Anthony Adams,P-1038,2026-05-24,10:00,Dr. Reyes,Periodontal Cleaning D4342,scheduled,3 quadrants
-APT-039,clinic-a,Smile Dental Clinic,Melissa Baker,P-1039,2026-05-24,13:00,Dr. Patel,Routine Cleaning,scheduled,Recall — 9 months
-APT-040,clinic-a,Smile Dental Clinic,Joshua Gonzalez,P-1040,2026-05-25,09:00,Dr. Reyes,Implant Abutment D6057,scheduled,Tooth #19 — stage 2
-APT-041,clinic-a,Smile Dental Clinic,Deborah Nelson,P-1041,2026-05-25,11:30,Dr. Patel,Composite Filling D2391,scheduled,Tooth #28
-APT-042,clinic-a,Smile Dental Clinic,Andrew Carter,P-1042,2026-05-25,14:00,Dr. Reyes,Extraction D7140,scheduled,Retained root #31
-APT-043,clinic-a,Smile Dental Clinic,Jessica Mitchell,P-1043,2026-05-26,08:00,Dr. Patel,Crown Delivery D2740,scheduled,Tooth #19 final
-APT-044,clinic-a,Smile Dental Clinic,Ryan Perez,P-1044,2026-05-26,10:00,Dr. Reyes,Routine Cleaning,scheduled,6-month recall
-APT-045,clinic-a,Smile Dental Clinic,Kimberly Roberts,P-1045,2026-05-26,14:00,Dr. Patel,Orthodontic Adjustment,scheduled,Lower wire tightening
-APT-046,clinic-a,Smile Dental Clinic,Jacob Turner,P-1046,2026-05-27,09:30,Dr. Reyes,Root Canal D3310,scheduled,Tooth #9 — trauma history
-APT-047,clinic-a,Smile Dental Clinic,Ashley Phillips,P-1047,2026-05-27,11:00,Dr. Patel,Periodontal Exam D0180,scheduled,Maintenance eval
-APT-048,clinic-a,Smile Dental Clinic,Nicholas Campbell,P-1048,2026-05-27,13:30,Dr. Reyes,Composite Filling D2393,scheduled,3 surfaces tooth #31
-APT-049,clinic-a,Smile Dental Clinic,Brittany Parker,P-1049,2026-05-28,08:00,Dr. Patel,Routine Cleaning,scheduled,New patient
-APT-050,clinic-a,Smile Dental Clinic,Tyler Evans,P-1050,2026-05-28,10:30,Dr. Reyes,Crown Prep D2712,scheduled,Tooth #2
-APT-051,clinic-a,Smile Dental Clinic,Samantha Edwards,P-1051,2026-05-28,13:00,Dr. Patel,Extraction D7210,scheduled,Wisdom tooth #1
-APT-052,clinic-a,Smile Dental Clinic,Zachary Collins,P-1052,2026-05-29,09:00,Dr. Reyes,Implant Consult,scheduled,Missing #19 and #30
-APT-053,clinic-a,Smile Dental Clinic,Victoria Stewart,P-1053,2026-05-29,11:00,Dr. Patel,Composite Filling D2391,scheduled,Tooth #12
-APT-054,clinic-a,Smile Dental Clinic,Austin Sanchez,P-1054,2026-05-29,14:30,Dr. Reyes,Routine Cleaning,scheduled,Annual recall
-APT-055,clinic-a,Smile Dental Clinic,Megan Morris,P-1055,2026-05-30,08:30,Dr. Patel,Root Canal D3320,scheduled,Tooth #4 — acute pain
-APT-056,clinic-a,Smile Dental Clinic,Cody Rogers,P-1056,2026-05-30,10:00,Dr. Reyes,Periodontal Cleaning D4341,scheduled,4 quadrants
-APT-057,clinic-a,Smile Dental Clinic,Rachel Reed,P-1057,2026-05-30,13:00,Dr. Patel,Crown Delivery D2740,scheduled,Tooth #2 final seating
-APT-058,clinic-a,Smile Dental Clinic,Justin Cook,P-1058,2026-06-01,09:00,Dr. Reyes,Composite Filling D2392,scheduled,Tooth #21
-APT-059,clinic-a,Smile Dental Clinic,Kayla Morgan,P-1059,2026-06-01,11:30,Dr. Patel,Orthodontic Consult,scheduled,Adult braces inquiry
-APT-060,clinic-a,Smile Dental Clinic,Brandon Bell,P-1060,2026-06-01,14:00,Dr. Reyes,Emergency Exam,scheduled,Swelling lower jaw
-APT-061,clinic-a,Smile Dental Clinic,Amber Murphy,P-1061,2026-06-02,08:00,Dr. Patel,Routine Cleaning,scheduled,6-month recall
-APT-062,clinic-a,Smile Dental Clinic,Logan Bailey,P-1062,2026-06-02,10:00,Dr. Reyes,Extraction D7210,scheduled,Tooth #32 partially erupted
-APT-063,clinic-a,Smile Dental Clinic,Tiffany Rivera,P-1063,2026-06-02,13:30,Dr. Patel,Composite Filling D2391,scheduled,Tooth #6
-APT-064,clinic-a,Smile Dental Clinic,Hunter Cooper,P-1064,2026-06-03,09:30,Dr. Reyes,Root Canal D3330,scheduled,Tooth #18
-APT-065,clinic-a,Smile Dental Clinic,Courtney Richardson,P-1065,2026-06-03,11:00,Dr. Patel,Routine Cleaning,scheduled,New patient — full exam
-APT-066,clinic-a,Smile Dental Clinic,Cody Cox,P-1066,2026-06-03,14:00,Dr. Reyes,Crown Prep D2712,scheduled,Tooth #30
-APT-067,clinic-a,Smile Dental Clinic,Brianna Howard,P-1067,2026-06-04,08:30,Dr. Patel,Periodontal Cleaning D4341,scheduled,2 quadrants
-APT-068,clinic-a,Smile Dental Clinic,Caleb Ward,P-1068,2026-06-04,10:30,Dr. Reyes,Composite Filling D2393,scheduled,Tooth #18 — 3 surfaces
-APT-069,clinic-a,Smile Dental Clinic,Destiny Torres,P-1069,2026-06-04,13:00,Dr. Patel,Implant Placement D6010,scheduled,Site #19 — healed ridge
-APT-070,clinic-a,Smile Dental Clinic,Evan Peterson,P-1070,2026-06-05,09:00,Dr. Reyes,Routine Cleaning,scheduled,Recall — 8 months
-APT-071,clinic-a,Smile Dental Clinic,Hailey Gray,P-1071,2026-06-05,11:00,Dr. Patel,Extraction D7140,scheduled,Non-restorable #20
-APT-072,clinic-a,Smile Dental Clinic,Ian Ramirez,P-1072,2026-06-05,14:30,Dr. Reyes,Crown Delivery D2740,scheduled,Tooth #30 final
-APT-073,clinic-a,Smile Dental Clinic,Jade James,P-1073,2026-06-06,08:00,Dr. Patel,Orthodontic Adjustment,scheduled,Upper and lower archwire
-APT-074,clinic-a,Smile Dental Clinic,Kyle Watson,P-1074,2026-06-06,10:00,Dr. Reyes,Composite Filling D2391,scheduled,Tooth #25
-APT-075,clinic-a,Smile Dental Clinic,Leah Brooks,P-1075,2026-06-06,13:00,Dr. Patel,Root Canal D3310,scheduled,Tooth #7 discolored
-APT-076,clinic-a,Smile Dental Clinic,Mason Kelly,P-1076,2026-06-07,09:30,Dr. Reyes,Periodontal Exam D0180,scheduled,Re-evaluation 3 months post SRP
-APT-077,clinic-a,Smile Dental Clinic,Natalie Sanders,P-1077,2026-06-07,11:30,Dr. Patel,Routine Cleaning,scheduled,6-month recall
-APT-078,clinic-a,Smile Dental Clinic,Owen Price,P-1078,2026-06-07,14:00,Dr. Reyes,Emergency Exam,scheduled,Chipped front tooth #8
-APT-079,clinic-a,Smile Dental Clinic,Paige Bennett,P-1079,2026-06-08,08:00,Dr. Patel,Composite Filling D2392,scheduled,Tooth #10
-APT-080,clinic-a,Smile Dental Clinic,Quinn Wood,P-1080,2026-06-08,10:00,Dr. Reyes,Extraction D7210,scheduled,Tooth #16 impacted
-APT-081,clinic-a,Smile Dental Clinic,Riley Barnes,P-1081,2026-06-08,13:30,Dr. Patel,Crown Prep D2712,scheduled,Tooth #13
-APT-082,clinic-a,Smile Dental Clinic,Sean Ross,P-1082,2026-06-09,09:00,Dr. Reyes,Routine Cleaning,scheduled,Annual recall
-APT-083,clinic-a,Smile Dental Clinic,Taylor Henderson,P-1083,2026-06-09,11:00,Dr. Patel,Implant Abutment D6057,scheduled,Tooth #3 — stage 2
-APT-084,clinic-a,Smile Dental Clinic,Uma Coleman,P-1084,2026-06-09,14:00,Dr. Reyes,Composite Filling D2391,scheduled,Tooth #22
-APT-085,clinic-a,Smile Dental Clinic,Victor Jenkins,P-1085,2026-06-10,08:30,Dr. Patel,Root Canal D3320,scheduled,Tooth #14 — recurrent decay
-APT-086,clinic-a,Smile Dental Clinic,Wendy Perry,P-1086,2026-06-10,10:30,Dr. Reyes,Periodontal Cleaning D4341,scheduled,Full mouth SRP
-APT-087,clinic-a,Smile Dental Clinic,Xander Powell,P-1087,2026-06-10,13:00,Dr. Patel,Routine Cleaning,scheduled,New patient
-APT-088,clinic-a,Smile Dental Clinic,Yara Long,P-1088,2026-06-11,09:00,Dr. Reyes,Crown Delivery D2740,scheduled,Tooth #13 final
-APT-089,clinic-a,Smile Dental Clinic,Zane Patterson,P-1089,2026-06-11,11:00,Dr. Patel,Orthodontic Retainer,scheduled,Upper Hawley delivery
-APT-090,clinic-a,Smile Dental Clinic,Abigail Hughes,P-1090,2026-06-11,14:30,Dr. Reyes,Extraction D7140,scheduled,Retained root #28
+appointment_id,tenant_id,tenant_name,patient_name,patient_id,date,time,provider,procedure,duration_minutes,status,notes
+APT-001,clinic-a,Smile Dental Clinic,Jane Smith,P-1001,2026-04-28,09:00,Dr. Reyes,Routine Cleaning,60,completed,Annual recall — no concerns
+APT-002,clinic-a,Smile Dental Clinic,Carlos Rivera,P-1002,2026-04-30,10:00,Dr. Patel,Crown Prep D2712,90,completed,Tooth #14 — pre-auth approved
+APT-003,clinic-a,Smile Dental Clinic,Amy Chen,P-1003,2026-05-01,09:00,Dr. Reyes,Composite Filling D2391,60,completed,Lower left molar
+APT-004,clinic-a,Smile Dental Clinic,John Doe,P-1004,2026-05-01,14:00,Dr. Patel,Emergency Exam,30,completed,Tooth #18 pain — referred for root canal
+APT-005,clinic-a,Smile Dental Clinic,Maria Lopez,P-1005,2026-05-05,09:00,Dr. Reyes,Composite Filling D2392,60,scheduled,Upper right premolar
+APT-006,clinic-a,Smile Dental Clinic,Brian King,P-1006,2026-05-05,10:30,Dr. Reyes,Emergency Exam,30,scheduled,Broken cusp
+APT-016,clinic-a,Smile Dental Clinic,Betty Taylor,P-1015,2026-05-05,09:00,Dr. Patel,Routine Cleaning,60,scheduled,New patient
+APT-007,clinic-a,Smile Dental Clinic,Linda Nguyen,P-1007,2026-05-06,09:00,Dr. Patel,Orthodontic Consult,45,scheduled,Invisalign evaluation
+APT-008,clinic-a,Smile Dental Clinic,Robert Kim,P-1008,2026-05-06,11:00,Dr. Reyes,Root Canal D3330,90,scheduled,Tooth #19 — pre-auth sent
+APT-009,clinic-a,Smile Dental Clinic,Patricia Moore,P-1009,2026-05-07,09:00,Dr. Reyes,Crown Delivery D2740,60,scheduled,Tooth #14 final seating
+APT-010,clinic-a,Smile Dental Clinic,Kevin Brown,P-1010,2026-05-07,14:00,Dr. Patel,Periodontal Cleaning D4341,60,scheduled,Full mouth SRP
+APT-011,clinic-a,Smile Dental Clinic,Sandra Davis,P-1011,2026-05-08,09:00,Dr. Reyes,Extraction D7210,60,scheduled,Wisdom tooth #32
+APT-012,clinic-a,Smile Dental Clinic,Thomas Wilson,P-1012,2026-05-08,13:00,Dr. Patel,Routine Cleaning,60,scheduled,6-month recall
+APT-013,clinic-a,Smile Dental Clinic,Nancy Martinez,P-1013,2026-05-12,09:00,Dr. Reyes,Crown Prep D2712,90,scheduled,Tooth #3
+APT-014,clinic-a,Smile Dental Clinic,Daniel Anderson,P-1014,2026-05-12,11:30,Dr. Patel,Implant Consult,45,scheduled,Replace tooth #30
+APT-015,clinic-a,Smile Dental Clinic,Jane Smith,P-1001,2026-05-14,10:00,Dr. Reyes,Root Canal D3310,90,scheduled,Tooth #8 — follow-up from Apr 28
+APT-017,clinic-a,Smile Dental Clinic,Mark Harris,P-1018,2026-05-04,09:00,Dr. Reyes,Periodontal Exam D0180,45,completed,Bleeding on probing noted
+APT-018,clinic-a,Smile Dental Clinic,Dorothy White,P-1017,2026-05-04,10:00,Dr. Patel,Routine Cleaning,60,completed,New patient
+APT-019,clinic-a,Smile Dental Clinic,Steven Robinson,P-1022,2026-05-04,11:30,Dr. Reyes,Composite Filling D2393,60,scheduled,Tooth #31
+APT-020,clinic-a,Smile Dental Clinic,Carol Thompson,P-1019,2026-05-04,14:00,Dr. Patel,Orthodontic Adjustment,30,scheduled,Wire change upper arch
+APT-021,clinic-a,Smile Dental Clinic,Donald Garcia,P-1020,2026-05-07,10:30,Dr. Reyes,Routine Cleaning,60,scheduled,6-month recall
+APT-022,clinic-a,Smile Dental Clinic,Margaret Martinez,P-1021,2026-05-07,11:00,Dr. Patel,Composite Filling D2391,60,scheduled,Tooth #6
+APT-023,clinic-a,Smile Dental Clinic,Ruth Clark,P-1023,2026-05-07,15:00,Dr. Reyes,Limited Oral Evaluation,30,scheduled,Second opinion
+APT-024,clinic-a,Smile Dental Clinic,Sharon Lewis,P-1025,2026-05-08,10:30,Dr. Reyes,Periodontal Cleaning D4341,60,scheduled,2 quadrants
+APT-025,clinic-a,Smile Dental Clinic,George Lee,P-1026,2026-05-08,09:00,Dr. Patel,Implant Consult,45,scheduled,Missing #19
+APT-026,clinic-a,Smile Dental Clinic,Donna Walker,P-1027,2026-05-08,14:30,Dr. Reyes,Crown Prep D2712,90,scheduled,Tooth #30
+APT-027,clinic-a,Smile Dental Clinic,Kenneth Rodriguez,P-1024,2026-05-13,09:00,Dr. Reyes,Routine Cleaning,60,scheduled,Annual recall
+APT-028,clinic-a,Smile Dental Clinic,Michelle Allen,P-1029,2026-05-13,14:00,Dr. Patel,Composite Filling D2391,60,scheduled,Tooth #20
+APT-029,clinic-a,Smile Dental Clinic,Ronald Young,P-1030,2026-05-14,09:00,Dr. Patel,Root Canal D3320,90,scheduled,Tooth #13
+APT-030,clinic-a,Smile Dental Clinic,Laura Hernandez,P-1031,2026-05-15,09:00,Dr. Reyes,Extraction D7140,60,scheduled,Retained root #28
+APT-031,clinic-a,Smile Dental Clinic,Edward Hall,P-1028,2026-05-05,13:00,Dr. Patel,Crown Delivery D2740,60,scheduled,Tooth #3 final
+APT-032,clinic-a,Smile Dental Clinic,Jessica Mitchell,P-1043,2026-05-05,14:30,Dr. Reyes,Implant Abutment D6057,60,scheduled,Tooth #19 stage 2
+APT-033,clinic-a,Smile Dental Clinic,Ryan Perez,P-1044,2026-05-05,15:30,Dr. Patel,Routine Cleaning,60,scheduled,6-month recall
+APT-034,clinic-a,Smile Dental Clinic,Paul Jackson,P-1016,2026-05-06,09:00,Dr. Reyes,Root Canal D3310,90,scheduled,Tooth #8 anterior
+APT-035,clinic-a,Smile Dental Clinic,Ashley Phillips,P-1047,2026-05-06,10:30,Dr. Patel,Periodontal Exam D0180,45,scheduled,Re-evaluation post SRP
+APT-036,clinic-a,Smile Dental Clinic,Nicholas Campbell,P-1048,2026-05-06,14:00,Dr. Reyes,Composite Filling D2393,60,scheduled,Tooth #31
+APT-037,clinic-a,Smile Dental Clinic,Brittany Parker,P-1049,2026-05-06,13:00,Dr. Patel,Routine Cleaning,60,scheduled,New patient

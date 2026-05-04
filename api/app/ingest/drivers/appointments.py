@@ -32,6 +32,7 @@ class AppointmentsDriver(BaseDriver):
                     "procedure_code": procedure_code,
                     "procedure_desc": procedure_desc,
                     "status":         row.get("status", "scheduled"),
+                    "duration_minutes": int(row.get("duration_minutes", 60)),
                     "notes":          row.get("notes", ""),
                     "tenant_id":      row.get("tenant_id") or self.tenant_id,
                 })
@@ -42,7 +43,7 @@ class AppointmentsDriver(BaseDriver):
             INSERT INTO appointments (
                 appointment_id, patient_name, patient_id, provider,
                 date, time, procedure_code, procedure_desc,
-                status, notes, tenant_id
+                status, duration_minutes, notes, tenant_id
             ) VALUES %s
             ON CONFLICT DO NOTHING
         """
@@ -50,7 +51,7 @@ class AppointmentsDriver(BaseDriver):
             (
                 r["appointment_id"], r["patient_name"], r["patient_id"], r["provider"],
                 r["date"], r["time"], r["procedure_code"], r["procedure_desc"],
-                r["status"], r["notes"], r["tenant_id"],
+                r["status"], r["duration_minutes"], r["notes"], r["tenant_id"],
             )
             for r in rows
         ]

@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from app.core.config import settings
 from app.core.logging import JSONFormatter, PHIRedactFilter
 from app.core.metrics import snapshot
-from app.routers import ask, session
+from app.routers import agent, ask, session
 
 logging.basicConfig(level=logging.INFO)
 
@@ -30,6 +30,7 @@ for _name in ("uvicorn", "uvicorn.access", "uvicorn.error"):
 app = FastAPI(title=settings.app_name, debug=settings.debug)
 
 app.include_router(ask.router)
+app.include_router(agent.router)
 app.include_router(session.router)
 
 

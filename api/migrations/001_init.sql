@@ -37,9 +37,10 @@ CREATE TABLE appointments (
     time            TIME NOT NULL,
     procedure_code  TEXT,
     procedure_desc  TEXT,
-    status          TEXT NOT NULL DEFAULT 'scheduled',
-    notes           TEXT,
-    tenant_id       TEXT NOT NULL,
+    status           TEXT NOT NULL DEFAULT 'scheduled',
+    duration_minutes INTEGER NOT NULL DEFAULT 60,
+    notes            TEXT,
+    tenant_id        TEXT NOT NULL,
     search_vector   TSVECTOR,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
