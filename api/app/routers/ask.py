@@ -35,7 +35,7 @@ async def ask_endpoint(
     started = time.perf_counter()
     log.info(f"[ask] session={body.session_id} tenant={tenant_id} role={user_role}")
 
-    history = get_history(body.session_id)
+    history = get_history(body.session_id, agent="RetrieverAgent")
     history.append({"role": "user", "content": body.query})
 
     session = get_session(body.session_id)
@@ -46,9 +46,10 @@ async def ask_endpoint(
         answer = ""
         error = False
         try:
-            for chunk in stream:
-                answer += chunk
-                yield f"data: {json.dumps({'type': 'token', 'value': chunk})}\n\n"
+            for event in stream:
+                if event.get("type") == "token":
+                    answer += event["value"]
+                yield f"data: {json.dumps(event)}\n\n"
         except Exception:
             error = True
             err = traceback.format_exc()
@@ -78,6 +79,8 @@ async def ask_endpoint(
                             results = json.loads(output_msg.get("output", "[]"))
                             record_retrieval(hit=len(results) > 0)
 
+            log.debug(f"[answer] session={body.session_id} text={answer[:400]!r}")
+
             if not error:
                 try:
                     messages = (
@@ -85,7 +88,7 @@ async def ask_endpoint(
                         + agent.tool_messages
                         + [{"role": "assistant", "content": answer}]
                     )
-                    append_messages(body.session_id, messages)
+                    append_messages(body.session_id, messages, agent="RetrieverAgent")
                 except Exception:
                     log.error("[ask] failed to save messages", exc_info=True)
 

@@ -17,13 +17,14 @@ CREATE TABLE sessions (
 CREATE TABLE messages (
     id          BIGSERIAL PRIMARY KEY,
     session_id  TEXT NOT NULL REFERENCES sessions(id),
+    agent       TEXT NOT NULL,
     role        TEXT,
     content     TEXT,
     data        JSONB,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX messages_session_idx ON messages (session_id, id);
+CREATE INDEX messages_session_agent_idx ON messages (session_id, agent, id);
 
 -- ── appointments ──────────────────────────────────────────────────────────────
 -- Flat denormalized mirror of the practice management system appointments

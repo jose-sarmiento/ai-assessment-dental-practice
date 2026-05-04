@@ -20,11 +20,13 @@ _RETRY_DELAY = 3
 log = logging.getLogger(__name__)
 
 
+
 class BaseAgent:
 
     def __init__(self, tenant_id: str):
-        self.tenant_id = tenant_id
-        self._model    = _MODEL
+        self.tenant_id  = tenant_id
+        self._model     = _MODEL
+        self._reasoning: dict | None = None
         self.tool_messages: list[dict] = []
         self.usage: dict = {"input_tokens": 0, "output_tokens": 0}
 
@@ -43,20 +45,29 @@ class BaseAgent:
         return self._loop(input_messages)
 
     def _loop(self, input_messages: list) -> Generator:
-        for _ in range(_MAX_STEPS):
-            tool_calls:    list[dict]    = []   # insertion-ordered, preserves model emission sequence
-            tool_args:     dict[str, str] = {} # call_id -> accumulated args string
-            active_call_id: str | None   = None
+        for step in range(_MAX_STEPS):
+            if step > 0:
+                yield {"type": "thinking"}
+
+            tool_calls:     list[dict]    = []
+            tool_args:      dict[str, str] = {}
+            active_call_id: str | None    = None
+            response_deltas: list[str]    = []
+            response_text   = ""
+            log.debug(f"[loop] agent={type(self).__name__} step={step + 1}")
 
             stream = None
             for attempt in range(1, _MAX_RETRIES + 1):
                 try:
-                    stream = _client.responses.create(
+                    kwargs = dict(
                         model=self._model,
                         input=input_messages,
                         tools=self.tools(),
                         stream=True,
                     )
+                    if self._reasoning:
+                        kwargs["reasoning"] = self._reasoning
+                    stream = _client.responses.create(**kwargs)
                     break
                 except Exception as e:
                     if attempt < _MAX_RETRIES:
@@ -67,7 +78,8 @@ class BaseAgent:
 
             for event in stream:
                 if event.type == "response.output_text.delta":
-                    yield event.delta
+                    response_text += event.delta
+                    response_deltas.append(event.delta)
 
                 elif event.type == "response.output_item.added":
                     if event.item.type == "function_call":
@@ -84,8 +96,14 @@ class BaseAgent:
                         u = event.response.usage
                         self.usage["input_tokens"]  += getattr(u, "input_tokens", 0)
                         self.usage["output_tokens"] += getattr(u, "output_tokens", 0)
+                    if response_text:
+                        log.debug(f"[response] agent={type(self).__name__} step={step + 1} text={response_text!r}")
                     if not tool_calls:
+                        for delta in response_deltas:
+                            yield {"type": "token", "value": delta}
                         return
+                    if response_text:
+                        yield {"type": "status", "value": response_text}
                     break
 
             if not tool_calls:
@@ -102,10 +120,12 @@ class BaseAgent:
 
                 filtered = {k: v for k, v in args.items() if v is not None and v != ""}
                 log.info(f"[tool_call] {tc['name']}({filtered})")
+                log.debug(f"[tool_call] agent={type(self).__name__} step={step + 1} {tc['name']}({filtered})")
                 result = self._execute(tc["name"], args)
                 if result is None:
                     result = []
                 log.info(f"[tool_result] {tc['name']} → {len(result)} results")
+                log.debug(f"[tool_result] {tc['name']} payload={json.dumps(result)[:500]}")
 
                 fc_msgs.append({
                     "type": "function_call",
@@ -124,4 +144,4 @@ class BaseAgent:
             self.tool_messages.extend(fc_msgs)
             self.tool_messages.extend(fr_msgs)
 
-        yield "\n\nSorry, I couldn't complete the request."
+        yield {"type": "token", "value": "\n\nSorry, I couldn't complete the request."}

@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from ..agents.scheduler import SchedulerAgent
+from ..agents.planner import PlannerAgent
 from ..core.deps import get_tenant_id, get_user_role
 from ..core.session import append_messages, get_history, get_session
 
@@ -32,20 +32,23 @@ async def agent_endpoint(
     started = time.perf_counter()
     log.info(f"[agent] session={body.session_id} tenant={tenant_id} role={user_role}")
 
-    history = get_history(body.session_id)
+    history = get_history(body.session_id, agent="PlannerAgent")
     history.append({"role": "user", "content": body.query})
 
     session  = get_session(body.session_id)
-    agent    = SchedulerAgent(tenant_id=tenant_id, session=session)
-    stream, citations = agent.run(history)
+    agent    = PlannerAgent(tenant_id=tenant_id, session=session)
+    stream = agent.run(history)
 
     def event_stream():
         answer = ""
+        error = False
         try:
-            for chunk in stream:
-                answer += chunk
-                yield f"data: {json.dumps({'type': 'token', 'value': chunk})}\n\n"
+            for event in stream:
+                if event.get("type") == "token":
+                    answer += event["value"]
+                yield f"data: {json.dumps(event)}\n\n"
         except Exception:
+            error = True
             log.error(f"[agent] stream error:\n{traceback.format_exc()}")
             yield f"data: {json.dumps({'type': 'error', 'value': 'An error occurred. Check server logs.'})}\n\n"
         finally:
@@ -55,17 +58,19 @@ async def agent_endpoint(
             cost    = round((in_tok * _COST_INPUT + out_tok * _COST_OUTPUT) / 1_000_000, 6)
             log.info(f"[agent] done session={body.session_id} latency={latency}s tokens=({in_tok}in/{out_tok}out) cost=${cost}")
 
-            try:
-                messages = (
-                    [{"role": "user", "content": body.query}]
-                    + agent.tool_messages
-                    + [{"role": "assistant", "content": answer}]
-                )
-                append_messages(body.session_id, messages)
-            except Exception:
-                log.error("[agent] failed to save messages", exc_info=True)
+            log.debug(f"[answer] session={body.session_id} text={answer[:400]!r}")
 
-            yield f"data: {json.dumps({'type': 'citations', 'value': citations})}\n\n"
+            if not error:
+                try:
+                    messages = (
+                        [{"role": "user", "content": body.query}]
+                        + agent.tool_messages
+                        + [{"role": "assistant", "content": answer}]
+                    )
+                    append_messages(body.session_id, messages, agent="PlannerAgent")
+                except Exception:
+                    log.error("[agent] failed to save messages", exc_info=True)
+
             yield "data: [DONE]\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")

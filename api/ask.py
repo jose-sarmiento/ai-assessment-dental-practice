@@ -174,6 +174,11 @@ def main():
                             print(f"\r  AI: {_GREEN}", end="", flush=True)
                             answer_started = True
                         print(event["value"], end="", flush=True)
+                    elif event["type"] == "status":
+                        print(f"\r  {_DIM}{event['value']}{_RESET}\033[K", end="", flush=True)
+                    elif event["type"] == "thinking":
+                        if not answer_started:
+                            print(f"\r  {_DIM}thinking...{_RESET}\033[K", end="", flush=True)
                     elif event["type"] == "error":
                         print(f"\r  {_RED}Error: {event['value']}{_RESET}")
 

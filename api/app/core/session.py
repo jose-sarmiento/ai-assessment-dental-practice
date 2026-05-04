@@ -49,13 +49,13 @@ def get_session(session_id: str) -> dict | None:
         conn.close()
 
 
-def get_history(session_id: str) -> list[dict]:
+def get_history(session_id: str, agent: str = "PlannerAgent") -> list[dict]:
     conn = get_conn()
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT role, content, data FROM messages WHERE session_id = %s ORDER BY id",
-                (session_id,),
+                "SELECT role, content, data FROM messages WHERE session_id = %s AND agent = %s ORDER BY id",
+                (session_id, agent),
             )
             history = []
             for role, content, data in cur.fetchall():
@@ -68,20 +68,20 @@ def get_history(session_id: str) -> list[dict]:
         conn.close()
 
 
-def append_messages(session_id: str, messages: list[dict]) -> None:
+def append_messages(session_id: str, messages: list[dict], agent: str = "PlannerAgent") -> None:
     conn = get_conn()
     try:
         with conn.cursor() as cur:
             for msg in messages:
                 if "role" in msg:
                     cur.execute(
-                        "INSERT INTO messages (session_id, role, content) VALUES (%s, %s, %s)",
-                        (session_id, msg["role"], msg.get("content", "")),
+                        "INSERT INTO messages (session_id, agent, role, content) VALUES (%s, %s, %s, %s)",
+                        (session_id, agent, msg["role"], msg.get("content", "")),
                     )
                 else:
                     cur.execute(
-                        "INSERT INTO messages (session_id, data) VALUES (%s, %s)",
-                        (session_id, json.dumps(msg)),
+                        "INSERT INTO messages (session_id, agent, data) VALUES (%s, %s, %s)",
+                        (session_id, agent, json.dumps(msg)),
                     )
         conn.commit()
     finally:

@@ -85,37 +85,88 @@ Every successful answer ends with a `Sources:` line. Citations are attached to e
 
 ### Agent Design
 
-A `BaseAgent` provides a shared streaming tool-use loop built on the OpenAI Responses API:
-1. Stream response from `gpt-4.1`
-2. On `function_call` event → execute tool → append result → continue loop (supports parallel tool calls)
-3. On `completed` with no tool calls → stream text response and exit
+#### BaseAgent
 
-Max 15 steps per turn. Tool messages (calls + results) are persisted to the session alongside user/assistant turns, giving the agent full context on follow-up questions — including document IDs from previous searches.
+`BaseAgent` provides a shared streaming tool-use loop built on the OpenAI Responses API. It supports multi-step reasoning — the model can call tools, process results, and continue reasoning before producing a final answer, up to 15 steps per turn.
 
-`RetrieverAgent` extends `BaseAgent` with five tools:
+The loop emits three SSE event types to the client — `thinking`, `status`, and `token` — giving users a live view of what the agent is doing: a spinner while the model reasons, a contextual message when a tool is invoked, and streamed text for the final answer.
+
+Additional capabilities:
+- Parallel tool calls within a single response, each tracked independently
+- Token usage and cost tracked across all steps including intermediate tool-call steps
+- Automatic retry on transient API errors — up to 3 attempts with a 3-second delay
+- 120s stream read timeout to handle network interruptions gracefully
+
+#### PlannerAgent
+
+`PlannerAgent` (`gpt-5.5`, reasoning effort `low`) is the entry point for `/agent`. It orchestrates the two subagents as tools:
+
+- `appointment_scheduler` → delegates to `SchedulerAgent`
+- `knowledge_retriever` → delegates to `RetrieverAgent`
+
+The planner selects the appropriate subagent, delegates a self-contained query, and synthesises a coherent final response. Each subagent runs with its own session history — continuity is maintained per domain across conversation turns. Subagent internals are never exposed to the user.
+
+#### SchedulerAgent
+
+`SchedulerAgent` (`gpt-4.1`) handles appointment workflows:
+
+- **Staff tools**: `search_appointments`, `get_available_slots`, `draft_appointment`, `confirm_appointment`
+- **Patient tools**: `search_appointments` only — scoped to their own records, read-only
+- `get_available_slots` computes free slots on a 15-minute grid with a 15-minute buffer between appointments, validated against hardcoded provider schedules
+- `draft_appointment` proposes without persisting — requires explicit user confirmation via `<select>` UI
+- `confirm_appointment` writes to DB with a generated `APT-XXXXXX` ID
+
+#### RetrieverAgent
+
+`RetrieverAgent` (`gpt-4.1`) handles data retrieval across structured and unstructured sources:
+
 - `search_appointments` — structured SQL with filters (date range, provider, patient, procedure, status, time)
 - `search_claims` — structured SQL with filters (date range, payer, patient, status, procedure)
 - `search_knowledge` — hybrid RAG search across all knowledge base documents
 - `search_in_document` — hybrid RAG scoped to a specific `document_id`
 - `read_document` — fetch chunks by page or range for document traversal across conversation turns
 
-Prompt is session-aware: includes clinic name, user role, and patient identity. Agent may only answer from tool results and must cite sources on every response.
+Both subagents are session-aware: prompt includes clinic name, current date/time, user role, and patient identity. Patient sessions cannot call booking or cross-patient tools.
+
+### Session History
+
+Each agent maintains its own message history per session, stored in the `messages` table under an `agent` column:
+
+| `session_id` | `agent` | content |
+|---|---|---|
+| `abc123` | `PlannerAgent` | user → fc:appointment_scheduler → fr:result → assistant |
+| `abc123` | `SchedulerAgent` | user → fc:get_available_slots → fr:result → assistant |
+| `abc123` | `RetrieverAgent` | user → fc:search_knowledge → fr:result → assistant |
+
+Each agent resumes from its own history on every turn, providing full multi-turn context within its domain. Histories are fully isolated — scheduling context does not bleed into retrieval and vice versa.
+
+### SSE Event Types
+
+All endpoints stream Server-Sent Events. Three event types:
+
+| Type | When | Client behaviour |
+|---|---|---|
+| `thinking` | Start of each new loop step | Show spinner |
+| `status` | Model text emitted before a tool call | Replace spinner with message |
+| `token` | Final response text deltas | Clear status, stream answer |
+| `error` | Stream exception | Show error message |
+
+Only `token` events form the saved answer. `status` and `thinking` are transient UI signals.
 
 ### API
 
 **`POST /session`** — creates a session storing tenant, role, and patient context. Returns `session_id`.
 
-**`POST /ask`** — accepts `query` + `session_id` with `X-Tenant-Id` and `X-User-Role` headers. Streams the response as Server-Sent Events (SSE). Only token events are sent to the client — tool calls and results are logged server-side.
+**`POST /agent`** — accepts `query` + `session_id`. Runs `PlannerAgent` → orchestrates subagents. Streams SSE events.
 
-### Fallback & Retry
-
-The OpenAI client is configured with `max_retries=0` to fail fast. The agent loop handles retries itself — up to 3 attempts with a 3-second delay — so it can yield a "retrying" signal to the client rather than silently hanging. On exhausting retries the error surfaces immediately.
+**`POST /ask`** — accepts `query` + `session_id`. Runs `RetrieverAgent` directly (no planner). Streams SSE events.
 
 ### Model Choices
 
 | Component | Model | Notes |
 |---|---|---|
-| LLM | `gpt-4.1` | Strong tool use, long context, streaming via Responses API |
+| Planner | `gpt-5.5` | Orchestration, reasoning effort `low` |
+| Subagents | `gpt-4.1` | Tool use, long context, streaming via Responses API |
 | Embeddings | `text-embedding-3-small` | Cost-efficient, 1536 dimensions |
 
 ---
@@ -126,9 +177,10 @@ No built-in authentication for the prototype. Two tenants — **clinic-a** (Smil
 
 Every database read filters by `tenant_id` at the SQL level — enforced in all tools and search queries. Cross-tenant data access is impossible regardless of query content.
 
-Role-based access (staff vs patient) is enforced at two levels:
+Role-based access (staff vs patient) is enforced at three levels:
 1. **Structured data** — patient sessions inject `patient_id` into every SQL tool call automatically
 2. **Knowledge base** — `audience` field filters documents by role at query time
+3. **Scheduler** — patient sessions receive a restricted tool list; booking tools are not exposed to patients
 
 Knowledge base documents are scoped by role at ingest time using folder structure:
 
@@ -156,14 +208,15 @@ The agent's system prompt explicitly restricts patient sessions to their own rec
 
 ## Observability
 
-Every `/ask` request logs:
+Every request logs at completion:
 
 ```json
-{"ts": "...", "level": "INFO", "logger": "app.routers.ask", "msg": "[ask] done latency=3.1s tokens=(1403in/57out) cost=$0.003"}
+{"ts": "...", "level": "INFO", "logger": "app.routers.agent", "msg": "[agent] done session=... latency=9.6s tokens=(3449in/217out) cost=$0.008634"}
 ```
 
 - **Structured JSON logs** — every line is a parseable JSON object (`ts`, `level`, `logger`, `msg`)
 - **Latency** — measured end-to-end per request
-- **Token usage** — captured from OpenAI `response.completed` event
-- **Cost estimate** — computed from token counts at gpt-4.1 pricing
+- **Token usage** — captured across all steps including tool-call steps; subagent usage is aggregated into the planner total per request
+- **Cost estimate** — computed from token counts at model pricing
 - **Rotating file** — `api/logs/api.log`, 10MB max, 5 backups
+- **Debug mode** — set `DEBUG=true` in `.env` to enable verbose logging: loop steps, response text per step, full tool result payloads, subagent dispatch/return, final answer text

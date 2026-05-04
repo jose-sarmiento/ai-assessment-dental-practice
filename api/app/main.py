@@ -9,7 +9,7 @@ from app.core.logging import JSONFormatter, PHIRedactFilter
 from app.core.metrics import snapshot
 from app.routers import agent, ask, session
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG if settings.debug else logging.INFO)
 
 Path("logs").mkdir(exist_ok=True)
 _file_handler = RotatingFileHandler(
@@ -21,6 +21,8 @@ for _handler in [*logging.getLogger().handlers, _file_handler]:
     _handler.addFilter(PHIRedactFilter())
 
 logging.getLogger().addHandler(_file_handler)
+
+logging.getLogger(__name__).info(f"[startup] debug mode: {settings.debug}")
 
 for _name in ("uvicorn", "uvicorn.access", "uvicorn.error"):
     for _h in logging.getLogger(_name).handlers:
