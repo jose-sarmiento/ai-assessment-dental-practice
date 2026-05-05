@@ -253,7 +253,10 @@ class SummarizerAgent(BaseAgent):
                 except json.JSONDecodeError:
                     args = {}
 
-                log.info(f"[summarizer] {tc['name']}({args})")
+                if tc['name'] == 'save_summary':
+                    log.info(f"[summarizer] save_summary(chars={len(args.get('text', ''))})")
+                else:
+                    log.info(f"[summarizer] {tc['name']}({args})")
                 result = self._execute(tc["name"], args)
                 if result is None:
                     result = []
