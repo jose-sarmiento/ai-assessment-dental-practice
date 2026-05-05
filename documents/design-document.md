@@ -104,6 +104,7 @@ Additional capabilities:
 - `appointment_scheduler` → delegates to `SchedulerAgent`
 - `billing_claims` → delegates to `ClaimsAgent`
 - `knowledge_retriever` → delegates to `RetrieverAgent`
+- `document_summarizer` → delegates to `SummarizerAgent` (requires user confirmation before running)
 
 The planner selects the appropriate subagent, delegates a self-contained query, and synthesises a coherent final response. Each subagent runs with its own session history — continuity is maintained per domain across conversation turns. Subagent internals are never exposed to the user.
 
@@ -136,6 +137,17 @@ The planner selects the appropriate subagent, delegates a self-contained query, 
 - `read_document` — fetch chunks by page or range for document traversal across conversation turns
 
 Both subagents are session-aware: prompt includes clinic name, current date/time, user role, and patient identity. Patient sessions cannot call booking or cross-patient tools.
+
+#### SummarizerAgent
+
+`SummarizerAgent` (`gpt-4.1`) produces comprehensive summaries of full documents without loading the entire content into a single context window:
+
+- **Tools**: `read_pages(page_from, page_to)` — reads a batch of pages at a time; `save_summary(text)` — appends a structured batch summary to an internal accumulator
+- Reads documents in batches of 4 pages, saving a structured summary per batch
+- Uses a sliding window of the last 2 tool call pairs in `input_messages` — old page content is discarded as batches progress
+- Current accumulated summary is injected into the system prompt on every step, giving the model context of what has already been summarised
+- Produces a final compiled summary after all pages are processed
+- The planner requires explicit user confirmation of the target document (by title, not `document_id`) before delegating to this agent
 
 ### Session History
 
@@ -217,6 +229,12 @@ Patient-identifying fields (`patient_name`, `patient_id`, `notes`) are redacted 
 2. **String-level** — regex patterns catch serialized PHI in log messages
 
 The agent's system prompt explicitly restricts patient sessions to their own records. Patient `patient_id` is injected server-side from the session — never from user input or the LLM.
+
+### Safety/Compliance — Design Decision
+
+A dedicated Safety/Compliance agent was considered but not built. The reasoning: by the time the LLM generates a response, the data it was given was already filtered at the SQL and vector layer — other patients' records never entered the tool results, staff-only documents never reached patient sessions, and cross-tenant data is physically unreachable. A post-generation LLM safety check would be evaluating a response already built from safe data, adding latency and cost for minimal security gain.
+
+The stronger approach — and the one implemented — is enforcing safety at the data layer where it cannot be circumvented by model behaviour. A response-level safety agent would be the right next layer in production for detecting hallucinated PHI (names or IDs the model may have seen in training data), but it is not the primary control and is documented as a roadmap item.
 
 ---
 

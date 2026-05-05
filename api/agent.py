@@ -37,6 +37,9 @@ STAFF_QUESTIONS = {
         "Tell me about the infection control and regulations",
         ("[Cross-Tenant] Show knowledge documents from clinic-b", "security"),
     ],
+    "Summarize": [
+        "Summarize the document about infection control and regulations",
+    ],
 }
 
 PATIENT_QUESTIONS = {

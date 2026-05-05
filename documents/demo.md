@@ -200,6 +200,29 @@ Expected: no documents returned — tenant isolation blocks access to clinic-b k
 
 ---
 
+**Summarizer — document confirmation + full summary**
+```
+Summarize: Summarize the document about infection control and regulations
+```
+
+This is a multi-turn flow:
+
+1. Planner calls `knowledge_retriever` to find the document by query
+2. Planner presents the document title to the user and asks for confirmation — **never shows the raw document_id**
+3. User confirms
+4. Planner delegates to `SummarizerAgent` with `document_confirmed=true`
+5. SummarizerAgent reads the document in page batches, saves structured summaries, produces a final compiled summary
+
+Expected: planner asks "Is this the document you want summarized: **dental_board_regs_aug_2011.pdf**?" → user confirms → full summary streams back page by page.
+
+**Screenshot 1:** AI asking for document confirmation (shows document title, not ID)
+
+**Screenshot 2:** Final compiled summary streamed back
+
+> Second call for the same document returns from Redis cache instantly (TTL 15 minutes, keyed by `{tenant_id}:summary:{document_id}`).
+
+---
+
 ## 6. `GET /metrics` — Token / Latency / Cost
 
 ```bash

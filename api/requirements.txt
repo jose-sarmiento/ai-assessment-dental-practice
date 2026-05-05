@@ -9,3 +9,4 @@ pgvector
 numpy
 httpx
 questionary
+redis
