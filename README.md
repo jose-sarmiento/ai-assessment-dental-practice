@@ -74,6 +74,8 @@ docker compose exec api python eval/runner.py
 
 Runs 15 gold set questions (appointments, claims, knowledge, security) through the live API. Each response is scored by an LLM evaluator. Outputs pass/fail per question with latency, citation check, and a summary.
 
+![Eval Results](screenshots/eval%20result.png)
+
 ---
 
 ## API Reference

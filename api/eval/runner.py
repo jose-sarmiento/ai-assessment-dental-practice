@@ -185,21 +185,15 @@ def main():
     print(f"\n  {_BOLD}Dental Practice AI — Evaluation Runner{_RESET}")
     print(f"  {_DIM}{len(cases)} questions · clinic-a · scorer={_EVAL_MODEL} · auto={AUTO_DELAY}s{_RESET}\n")
 
-    results  = []
-    sessions = {}
+    results = []
 
     with httpx.Client(timeout=httpx.Timeout(connect=10, read=None, write=10, pool=10)) as client:
         prev_metrics = get_metrics(client)
 
         for idx, case in enumerate(cases):
-            role     = case["role"]
-            endpoint = case["endpoint"]
-            key      = (role, endpoint)
-
-            if key not in sessions:
-                sessions[key] = create_session(client, role)
-
-            session_id = sessions[key]
+            role       = case["role"]
+            endpoint   = case["endpoint"]
+            session_id = create_session(client, role)
 
             cat_color = _RED if case["category"] == "security" else _CYAN
             print(f"  {_BOLD}[{idx + 1}/{len(cases)}]{_RESET} {cat_color}{case['category'].upper()}{_RESET}  "
