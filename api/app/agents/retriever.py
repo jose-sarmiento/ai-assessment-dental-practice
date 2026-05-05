@@ -87,9 +87,10 @@ _VALID_CLAIM_STATUSES       = {s.value for s in ClaimStatus}
 
 class RetrieverAgent(BaseAgent):
 
-    def __init__(self, tenant_id: str, session: dict | None = None):
+    def __init__(self, tenant_id: str, session: dict | None = None, knowledge_only: bool = True):
         super().__init__(tenant_id)
-        self.session = session or {}
+        self.session        = session or {}
+        self.knowledge_only = knowledge_only
 
     def prompt(self) -> str:
         from datetime import datetime
@@ -119,26 +120,13 @@ class RetrieverAgent(BaseAgent):
             "Rules you must follow:\n"
             "1. Always use a tool before answering. Never answer from your own knowledge.\n"
             "2. If the tools return no results, give a specific response rather than a generic message.\n"
-            "3. Every successful answer must end with a 'Sources:' line listing the record IDs or documents used.\n"
+            "3. If records were found, end your answer with a 'Sources:' line listing the record IDs or documents used. If no records were found, omit the Sources line.\n"
             "4. Do not infer, assume, or fill gaps with outside knowledge. Stick strictly to retrieved data.\n"
             "5. If the question is outside the scope of appointments, claims, or practice documents, say so."
         )
 
     def tools(self) -> list[dict]:
-        return [
-            _tool(
-                "search_appointments",
-                "Search appointments by patient name, provider, procedure, date range, or status. "
-                "Use date_from and date_to for ranges (e.g. a full month). All dates must be YYYY-MM-DD.",
-                SearchAppointmentsArgs,
-            ),
-            _tool(
-                "search_claims",
-                "Search insurance claims by patient, payer, procedure, date of service range, or status. "
-                "Only set status if the user explicitly asks for a specific status. "
-                "Do not assume a default status — omit it to return all claims.",
-                SearchClaimsArgs,
-            ),
+        knowledge_tools = [
             _tool(
                 "search_knowledge",
                 "Search the knowledge base for insurance policies, treatment FAQs, and other documents. "
@@ -161,6 +149,24 @@ class RetrieverAgent(BaseAgent):
                 ReadDocumentArgs,
             ),
         ]
+        if self.knowledge_only:
+            return knowledge_tools
+        return [
+            _tool(
+                "search_appointments",
+                "Search appointments by patient name, provider, procedure, date range, or status. "
+                "Use date_from and date_to for ranges (e.g. a full month). All dates must be YYYY-MM-DD.",
+                SearchAppointmentsArgs,
+            ),
+            _tool(
+                "search_claims",
+                "Search insurance claims and billing records by patient, payer, procedure, date of service range, or status. "
+                "Use this for: outstanding balances (patient_owed), denied claims, pending claims, coverage status, claim follow-ups. "
+                "Only set status if the user explicitly asks for a specific status. "
+                "Do not assume a default status — omit it to return all claims.",
+                SearchClaimsArgs,
+            ),
+        ] + knowledge_tools
 
     def _execute(self, name: str, args: dict) -> list:
         args = {k: v for k, v in args.items() if v != "" and v is not None}

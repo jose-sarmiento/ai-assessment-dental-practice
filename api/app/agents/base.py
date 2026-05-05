@@ -21,6 +21,7 @@ log = logging.getLogger(__name__)
 
 
 
+
 class BaseAgent:
 
     def __init__(self, tenant_id: str):
@@ -52,7 +53,6 @@ class BaseAgent:
             tool_calls:     list[dict]    = []
             tool_args:      dict[str, str] = {}
             active_call_id: str | None    = None
-            response_deltas: list[str]    = []
             response_text   = ""
             log.debug(f"[loop] agent={type(self).__name__} step={step + 1}")
 
@@ -79,7 +79,7 @@ class BaseAgent:
             for event in stream:
                 if event.type == "response.output_text.delta":
                     response_text += event.delta
-                    response_deltas.append(event.delta)
+                    yield {"type": "token", "value": event.delta}
 
                 elif event.type == "response.output_item.added":
                     if event.item.type == "function_call":
@@ -99,11 +99,7 @@ class BaseAgent:
                     if response_text:
                         log.debug(f"[response] agent={type(self).__name__} step={step + 1} text={response_text!r}")
                     if not tool_calls:
-                        for delta in response_deltas:
-                            yield {"type": "token", "value": delta}
                         return
-                    if response_text:
-                        yield {"type": "status", "value": response_text}
                     break
 
             if not tool_calls:

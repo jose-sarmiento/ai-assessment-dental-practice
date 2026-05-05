@@ -39,7 +39,7 @@ async def ask_endpoint(
     history.append({"role": "user", "content": body.query})
 
     session = get_session(body.session_id)
-    agent = RetrieverAgent(tenant_id=tenant_id, session=session)
+    agent = RetrieverAgent(tenant_id=tenant_id, session=session, knowledge_only=False)
     stream = agent.run(history)
 
     def event_stream():

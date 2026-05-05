@@ -94,7 +94,7 @@ class SchedulerAgent(BaseAgent):
                 "- search_appointments: view this patient's own appointments\n\n"
                 "Rules:\n"
                 "1. Only retrieve data for this patient. Never show other patients' records.\n"
-                "2. Every response must end with a 'Sources:' line."
+                "2. If records were found, end your answer with a 'Sources:' line. If no records were found, omit it."
             )
 
         return (
@@ -122,7 +122,7 @@ class SchedulerAgent(BaseAgent):
             "   If user selects 'Confirm', call confirm_appointment with the same details.\n"
             "   If user selects 'Cancel', stop and acknowledge.\n"
             "5. When confirmed, include the appointment_id prominently in the response (e.g. 'Appointment ID: APT-XXXXXX').\n"
-            "6. Every response must end with a 'Sources:' line."
+            "6. If records were found or an action was taken, end your answer with a 'Sources:' line. If no records were found, omit it."
         )
 
     def tools(self) -> list[dict]:

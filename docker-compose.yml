@@ -33,6 +33,7 @@ services:
       - .:/workspace
       - ./api/ask.py:/app/ask.py
       - ./api/agent.py:/app/agent.py
+      - ./api/eval:/app/eval
       - ./api/logs:/app/logs
     depends_on:
       postgres:

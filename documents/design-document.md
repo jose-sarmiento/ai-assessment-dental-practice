@@ -102,9 +102,18 @@ Additional capabilities:
 `PlannerAgent` (`gpt-5.5`, reasoning effort `low`) is the entry point for `/agent`. It orchestrates the two subagents as tools:
 
 - `appointment_scheduler` → delegates to `SchedulerAgent`
+- `billing_claims` → delegates to `ClaimsAgent`
 - `knowledge_retriever` → delegates to `RetrieverAgent`
 
 The planner selects the appropriate subagent, delegates a self-contained query, and synthesises a coherent final response. Each subagent runs with its own session history — continuity is maintained per domain across conversation turns. Subagent internals are never exposed to the user.
+
+#### ClaimsAgent
+
+`ClaimsAgent` (`gpt-4.1`) is a dedicated Billing & Claims specialist:
+
+- **Tool**: `search_claims` — queries billing records by patient, payer, procedure, status, or date range. Results include `billed_amount`, `insurance_paid`, and `patient_owed` fields.
+- Handles: outstanding balances, denied claim follow-ups, coverage status, pending claim lists
+- Patient sessions are scoped to their own claims via server-side `patient_id` injection
 
 #### SchedulerAgent
 
@@ -142,16 +151,15 @@ Each agent resumes from its own history on every turn, providing full multi-turn
 
 ### SSE Event Types
 
-All endpoints stream Server-Sent Events. Three event types:
+All endpoints stream Server-Sent Events:
 
 | Type | When | Client behaviour |
 |---|---|---|
-| `thinking` | Start of each new loop step | Show spinner |
-| `status` | Model text emitted before a tool call | Replace spinner with message |
-| `token` | Final response text deltas | Clear status, stream answer |
+| `thinking` | Start of each new loop step after the first | Show spinner |
+| `token` | Response text deltas | Stream answer |
 | `error` | Stream exception | Show error message |
 
-Only `token` events form the saved answer. `status` and `thinking` are transient UI signals.
+Only `token` events form the saved answer. `thinking` is a transient UI signal.
 
 ### API
 
@@ -160,6 +168,12 @@ Only `token` events form the saved answer. `status` and `thinking` are transient
 **`POST /agent`** — accepts `query` + `session_id`. Runs `PlannerAgent` → orchestrates subagents. Streams SSE events.
 
 **`POST /ask`** — accepts `query` + `session_id`. Runs `RetrieverAgent` directly (no planner). Streams SSE events.
+
+### Demo CLI
+
+The prototype ships with two terminal clients (`ask.py`, `agent.py`) that exercise the full feature set — multi-tenancy, RBAC, streaming, session history, security tests, and the booking confirmation flow with `<select>` inputs.
+
+> The CLI intentionally packs a lot into a terminal interface. Features like real-time streaming indicators, inline slot selection, and structured table output are deliberately compact given the medium — a web or mobile UI would surface these more naturally.
 
 ### Model Choices
 
@@ -220,3 +234,106 @@ Every request logs at completion:
 - **Cost estimate** — computed from token counts at model pricing
 - **Rotating file** — `api/logs/api.log`, 10MB max, 5 backups
 - **Debug mode** — set `DEBUG=true` in `.env` to enable verbose logging: loop steps, response text per step, full tool result payloads, subagent dispatch/return, final answer text
+
+---
+
+## LLMOps Plan
+
+### Ingestion — Event-Driven Worker Architecture
+
+The prototype ingests documents synchronously via `setup.py`. In production, ingestion moves to a job queue pattern on AWS:
+
+```
+Document uploaded to S3
+        ↓
+   API / Admin enqueues job
+        ↓
+   SQS Queue
+        ↓
+   Worker pool (ECS Fargate)
+   polls queue, pops job, processes:
+   ├── parse (Docling)
+   ├── chunk (HybridChunker)
+   ├── embed (OpenAI text-embedding-3-small)
+   └── store (RDS pgvector)
+```
+
+Workers are long-running ECS tasks that continuously poll SQS and pop one job at a time. Each worker processes one document end-to-end — parse, chunk, embed, store — then deletes the message from the queue. If processing fails, the message becomes visible again after the visibility timeout and another worker picks it up. Failed messages after max retries move to a dead-letter queue for inspection.
+
+The API is fully decoupled from ingestion. A document upload enqueues a job and returns immediately — the user never waits for embeddings to complete. Throughput scales horizontally by increasing the number of workers — more ECS tasks polling the same queue, no code changes required.
+
+The deterministic `document_id` (derived from `tenant_id + filename`) ensures idempotent upserts — re-ingesting the same file is a no-op.
+
+### Infrastructure as Code — Terraform
+
+All AWS resources are defined in Terraform with shared modules and environment-specific variable files:
+
+```
+terraform/
+  ├── modules/
+  │   ├── networking/     # VPC, subnets, security groups
+  │   ├── database/       # RDS PostgreSQL + pgvector extension
+  │   ├── api/            # ECS Fargate cluster, task definition, ALB
+  │   ├── ingest/         # S3 bucket, SQS, worker task definition
+  │   └── observability/  # CloudWatch log groups, dashboards, alarms
+  └── envs/
+      ├── dev/            # minimal resources, single worker, no HA
+      ├── staging/        # production-mirror, used for pre-release validation
+      └── production/     # multi-AZ, autoscaling, enhanced monitoring
+```
+
+Each environment uses the same modules with different variable values — instance sizes, replica counts, worker counts, and retention policies differ per env. Staging mirrors production configuration so pre-release validation catches infra-level issues before they reach prod.
+
+Tenant isolation is enforced at the infrastructure level — each tenant's documents land in a prefixed S3 path (`s3://bucket/{tenant_id}/`), and RDS row-level security mirrors the application-level `tenant_id` filter.
+
+### CI/CD — GitHub Actions
+
+```
+On pull request:
+  ├── lint + type check
+  ├── unit tests (pytest)
+  ├── eval harness — run gold sets, compare metrics against baseline
+  └── block merge if hallucination rate or citation overlap degrades
+
+On merge to main → deploy to dev:
+  ├── build Docker image → push to ECR
+  ├── terraform plan (dev)
+  └── ECS rolling deploy → dev environment
+
+On merge to main (scheduled or manual promote) → deploy to staging:
+  ├── terraform plan (staging) — requires approval
+  ├── ECS rolling deploy → staging
+  └── smoke tests + eval harness against staging
+
+On tag (release) → deploy to production:
+  ├── terraform apply (production) — requires approval
+  ├── ECS rolling deploy → production (zero-downtime)
+  └── smoke tests against production endpoints
+```
+
+Staging acts as the final gate before production — it runs the same infrastructure and the same eval harness. A release only reaches production after staging passes.
+
+### Model & Prompt Versioning
+
+- Model IDs are pinned in config (`gpt-5.5`, `gpt-4.1`) — never resolved dynamically
+- System prompts are versioned in source control — prompt changes go through PR review and trigger an eval run before merge
+- If a model version is retired by OpenAI, a config change + CI run is all that's required to swap it
+
+### Rollback Strategy
+
+| Layer | Rollback mechanism |
+|---|---|
+| API | ECS previous task definition — one CLI command |
+| Prompts | Git revert → CI redeploy |
+| Model version | Config change → CI redeploy |
+| DB schema | Flyway/Liquibase migration rollback |
+| Ingestion | SQS dead-letter queue — failed messages replayed after fix |
+
+### Monitoring & Alerting
+
+CloudWatch dashboards track per-tenant metrics. Alarms fire on:
+- p95 latency > 15s
+- LLM error rate > 1%
+- Token cost spike > 2× daily baseline
+- Retrieval hit@k drops below threshold
+- SQS queue depth growing (ingestion backlog)

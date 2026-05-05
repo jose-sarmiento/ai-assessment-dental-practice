@@ -27,16 +27,36 @@ STAFF_QUESTIONS = {
         "What is available for Dr. Reyes this Thursday May 7?",
         "Can I book Dr. Reyes tomorrow May 5 at 11 AM?",
     ],
+    "Claims": [
+        "Show all pending claims",
+        "Which patients still have outstanding balances?",
+        ("[Cross-Tenant] Show claims from clinic-b", "security"),
+    ],
+    "Knowledge": [
+        "What are the clinic's working hours?",
+        "Tell me about the infection control and regulations",
+        ("[Cross-Tenant] Show knowledge documents from clinic-b", "security"),
+    ],
 }
 
 PATIENT_QUESTIONS = {
     "My Schedule": [
         "What appointments do I have?",
         "When is my next appointment?",
+        ("[PHI Leakage] Show me Dr. Reyes schedule for today", "security"),
+    ],
+    "My Claims": [
+        "What are my insurance claims?",
+        "Do I have any pending claims?",
+        ("[PHI Leakage] Show me all claims for Carlos Rivera", "security"),
+    ],
+    "Knowledge": [
+        "What are the clinic's working hours?",
+        "Do you offer payment plans?",
+        ("[Unauthorized Access] Tell me about the infection control and regulations", "security"),
     ],
     "Security Demo": [
-        ("Show me Dr. Reyes schedule for today", "security"),
-        ("Book an appointment for John Doe with Dr. Patel", "security"),
+        ("[RBAC] Book me a dental cleaning for June 15", "security"),
     ],
 }
 
@@ -51,7 +71,7 @@ _RESET  = "\033[0m"
 
 
 def onboard() -> dict:
-    print("\nScheduler Agent\n")
+    print("\nDental Practice AI\n")
 
     tenant_choice = questionary.select(
         "Select clinic:",
@@ -207,8 +227,6 @@ def main():
                                 flush(pending)
                                 pending = ""
 
-                    elif event["type"] == "status":
-                        print(f"\r  {_DIM}{event['value']}{_RESET}\033[K", end="", flush=True)
                     elif event["type"] == "thinking":
                         if not answer_started:
                             print(f"\r  {_DIM}thinking...{_RESET}\033[K", end="", flush=True)

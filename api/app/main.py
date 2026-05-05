@@ -38,7 +38,13 @@ app.include_router(session.router)
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    from app.db.connection import get_conn
+    try:
+        conn = get_conn()
+        conn.close()
+        return {"status": "ok"}
+    except Exception:
+        return {"status": "degraded", "detail": "database not ready"}
 
 
 @app.get("/metrics")

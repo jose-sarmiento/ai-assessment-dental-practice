@@ -14,14 +14,13 @@ def setup():
     missing = [v for v in REQUIRED if not os.getenv(v)]
     if missing:
         print(f"ERROR: missing env vars: {', '.join(missing)}")
-        print("Add them to .env at the repo root and re-run.")
         sys.exit(1)
 
     import psycopg2
     from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-    from app.db.connection import get_conn
 
-    db_name = os.getenv("DB_NAME")
+    db_name   = os.getenv("DB_NAME")
+    fresh     = "--fresh" in sys.argv
     admin_url = (
         f"postgresql://{quote_plus(os.getenv('DB_USER'))}:{quote_plus(os.getenv('DB_PASSWORD'))}"
         f"@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/postgres"
@@ -31,9 +30,18 @@ def setup():
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     with conn.cursor() as cur:
         cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (db_name,))
-        if cur.fetchone():
+        exists = cur.fetchone()
+
+        if exists and not fresh:
+            print(f"Database '{db_name}' already exists. Setup has already been run.")
+            print(f"To drop and recreate, run: docker compose exec api python setup.py --fresh")
+            print(f"Note: --fresh will require restarting the API after: docker compose restart api")
+            sys.exit(0)
+
+        if exists and fresh:
             print(f"Dropping '{db_name}'...")
             cur.execute(f'DROP DATABASE "{db_name}"')
+
         print(f"Creating '{db_name}'...")
         cur.execute(f'CREATE DATABASE "{db_name}"')
     conn.close()
@@ -50,8 +58,6 @@ def setup():
         conn.commit()
     conn.close()
 
-    print("Done.")
-
     print("\nRunning ingest...")
     from app.ingest.ingest import ingest_file
 
@@ -59,7 +65,7 @@ def setup():
         "appointments.csv": "appointments",
         "claims.csv":       "claims",
     }
-    AUDIENCE_DIRS = {"staff", "patient"}
+    AUDIENCE_DIRS = {"staff", "patient", "all"}
 
     mock_root = Path(__file__).parent / "mock_data"
     for clinic_dir in sorted(mock_root.iterdir()):
@@ -68,7 +74,6 @@ def setup():
         tenant_id = clinic_dir.name
         for entry in sorted(clinic_dir.iterdir()):
             if entry.is_dir() and entry.name in AUDIENCE_DIRS:
-                # staff/ or patient/ subfolder — all files are data_sources with that audience
                 audience = entry.name
                 for file_path in sorted(entry.iterdir()):
                     ingest_file(str(file_path), tenant_id=tenant_id, table="data_sources", audience=audience)
@@ -77,6 +82,11 @@ def setup():
                 ingest_file(str(entry), tenant_id=tenant_id, table=table)
 
     print("Ingest complete.")
+
+    if fresh:
+        print("\nRestart the API to restore the database connection:")
+        print("  docker compose restart api")
+
 
 
 if __name__ == "__main__":
