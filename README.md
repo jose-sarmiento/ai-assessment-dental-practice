@@ -24,7 +24,7 @@ Multi-agent AI assistant for dental practice software automating patient schedul
 **1. Configure environment**
 
 ```bash
-cp api/.env.example .env
+cp .env.example .env
 # Add OPENAI_API_KEY to .env
 ```
 
